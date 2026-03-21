@@ -19,8 +19,6 @@ concurrency:
 on:
   schedule:
     - cron: "0 0 31 2 *"
-  schedule:
-    - cron: "0 0 31 2 *"
   workflow_call:
     inputs:
       ref:
@@ -492,7 +490,8 @@ jobs:
                 const files = fs.readdirSync(sourcePath).filter(f => f.endsWith('.js') || f.endsWith('.ts'));
                 sourceStats = files.map(f => {
                   const content = fs.readFileSync(`${sourcePath}${f}`, 'utf8');
-                  const lines = content.split('\n').length;
+                  const lines = content.split('
+').length;
                   const exports = [...content.matchAll(/export\s+(?:async\s+)?(?:function|const|class)\s+(\w+)/g)].map(m => m[1]);
                   return { file: f, lines, exports };
                 });
@@ -1701,7 +1700,8 @@ jobs:
             });
 
             // W7: Build PR body with Closes for all issues
-            const closesLines = issueNumbers.map(n => `Closes #${n}`).join('\n');
+            const closesLines = issueNumbers.map(n => `Closes #${n}`).join('
+');
             const prTitle = issueNumbers.length > 1
               ? `fix: resolve issues ${issueNumbers.map(n => '#' + n).join(', ')}`
               : `fix: resolve issue #${issueNumber}`;
@@ -1714,7 +1714,9 @@ jobs:
               const { data: pr } = await github.rest.pulls.create({
                 owner, repo,
                 title: prTitle,
-                body: `${closesLines}\n\nAutomated transformation.`,
+                body: `${closesLines}
+
+Automated transformation.`,
                 head: branchName, base: 'main',
               });
               prNumber = pr.number;
