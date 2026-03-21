@@ -94,7 +94,7 @@ review-issues-cap = 2                  # max issues reviewed per batch (conserva
 min-resolved-issues = 1                # mission-complete: minimum closed-as-RESOLVED issues
 min-cumulative-transforms = 1          # mission-complete: minimum transform cycles
 max-source-todos = 2                   # mission-complete: max TODO comments in src
-acceptance-criteria-threshold = 60     # mission-complete: % acceptance criteria required
+acceptance-criteria-threshold = 50     # mission-complete: % acceptance criteria required
 
 [profiles.med]
 # Balanced — good results, middle ground.
@@ -173,20 +173,21 @@ screenshot-file = "SCREENSHOT_INDEX.png"
 
 [acceptance-criteria]
 # Auto-generated from MISSION.md on init. Updated by implementation-review.
-total = 9
-1 = { text = "Converting `1994` to Roman produces `\"MCMXCIV\"`", met = false }
-2 = { text = "Converting `\"MCMXCIV\"` from Roman produces `1994`", met = false }
-3 = { text = "Converting `4` to Roman produces `\"IV\"`", met = false }
-4 = { text = "Round-trip holds for all n in 1–3999", met = false }
-5 = { text = "Converting `0` to Roman throws `RangeError`", met = false }
-6 = { text = "Converting `4000` to Roman throws `RangeError`", met = false }
-7 = { text = "Converting `\"IIII\"` from Roman throws `TypeError` (strict: only subtractive notation accepted)", met = false }
-8 = { text = "All unit tests pass", met = false }
-9 = { text = "README documents usage with examples", met = false }
+total = 10
+1 = { text = "Diffing two schemas returns an array of change objects", met = false }
+2 = { text = "Detects added and removed properties", met = false }
+3 = { text = "Detects type changes (e.g. `\"string\"` → `\"number\"`)", met = false }
+4 = { text = "Detects `required` array changes", met = false }
+5 = { text = "Handles nested schemas recursively (properties within properties)", met = false }
+6 = { text = "Resolves local `$ref` before diffing", met = false }
+7 = { text = "Classifying a removed required property returns `\"breaking\"`", met = false }
+8 = { text = "Formatting changes produces readable text output", met = false }
+9 = { text = "All unit tests pass", met = false }
+10 = { text = "README documents usage with examples", met = false }
 
 [init]
-timestamp = "2026-03-21T10:29:18.565Z"
+timestamp = "2026-03-21T10:34:41.669Z"
 mode = "purge"
-mission = "6-kyu-understand-roman-numerals"
+mission = "4-kyu-analyze-json-schema-diff"
 mission-type = "random"
 version = "7.4.35"

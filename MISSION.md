@@ -1,30 +1,48 @@
 # Mission
 
-A JavaScript library for converting between integers and Roman numeral strings.
+A JavaScript library that computes structured diffs between two JSON Schema (Draft-07) documents, helping API developers track and validate schema changes across versions.
 
 ## Required Capabilities
 
-- Convert an integer (1–3999) to its Roman numeral representation using subtractive notation (IV, IX, XL, XC, CD, CM).
-- Convert a Roman numeral string back to an integer.
-- The round-trip property must hold: converting to Roman and back yields the original integer for all valid values.
+- Compare two JSON Schema objects and return an array of change records.
+- Render changes as human-readable text or JSON.
+- Classify each change as `"breaking"`, `"compatible"`, or `"informational"`.
+
+## Change Record Format
+
+Each change is a plain object with these fields:
+
+```js
+{ path: "/properties/email", changeType: "type-changed", before: "string", after: "number" }
+```
+
+Supported `changeType` values:
+
+- `property-added` / `property-removed`
+- `type-changed`
+- `required-added` / `required-removed`
+- `enum-value-added` / `enum-value-removed`
+- `description-changed`
+- `nested-changed` (recursive diff of sub-schemas)
 
 ## Requirements
 
-- Throw `RangeError` for numbers outside 1–3999.
-- Throw `TypeError` for invalid Roman numeral strings.
-- Handle subtractive notation correctly (e.g. IV = 4, not IIII).
+- Resolve local `$ref` pointers (JSON Pointer within the same document) before diffing. Remote `$ref` is out of scope — throw if encountered.
+- Traverse `properties`, `items`, `allOf`, `oneOf`, `anyOf` recursively.
 - Export all public API as named exports from `src/lib/main.js`.
-- Comprehensive unit tests including boundary values (1, 3999), subtractive cases, and invalid inputs.
-- README with usage examples and conversion table.
+- No external runtime dependencies.
+- Comprehensive unit tests covering each change type, nested schemas, and `$ref` resolution.
+- README with usage examples showing a before/after schema pair.
 
 ## Acceptance Criteria
 
-- [ ] Converting `1994` to Roman produces `"MCMXCIV"`
-- [ ] Converting `"MCMXCIV"` from Roman produces `1994`
-- [ ] Converting `4` to Roman produces `"IV"`
-- [ ] Round-trip holds for all n in 1–3999
-- [ ] Converting `0` to Roman throws `RangeError`
-- [ ] Converting `4000` to Roman throws `RangeError`
-- [ ] Converting `"IIII"` from Roman throws `TypeError` (strict: only subtractive notation accepted)
+- [ ] Diffing two schemas returns an array of change objects
+- [ ] Detects added and removed properties
+- [ ] Detects type changes (e.g. `"string"` → `"number"`)
+- [ ] Detects `required` array changes
+- [ ] Handles nested schemas recursively (properties within properties)
+- [ ] Resolves local `$ref` before diffing
+- [ ] Classifying a removed required property returns `"breaking"`
+- [ ] Formatting changes produces readable text output
 - [ ] All unit tests pass
 - [ ] README documents usage with examples
