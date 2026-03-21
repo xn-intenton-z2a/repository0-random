@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
-// tests/unit/stringify.test.js
 import { describe, test, expect } from "vitest";
+import { parseCron, stringifyCron } from "../../src/lib/main.js";
 
-describe("Stringify Cron (TODO)", () => {
-  test("TODO: add tests for stringifyCron - placeholder", () => {
-    // TODO: write detailed tests for stringifyCron
-    expect(true).toBe(true);
+describe("Stringify Cron", () => {
+  test("stringify preserves step tokens and expands shortcuts", () => {
+    expect(stringifyCron(parseCron('*/15 * * * *'))).toBe('*/15 * * * *');
+    expect(stringifyCron(parseCron('@monthly'))).toBe('0 0 1 * *');
   });
 });

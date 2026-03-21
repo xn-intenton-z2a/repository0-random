@@ -1,6 +1,37 @@
 # repo
 
-This repository is powered by [intenti&ouml;n agentic-lib](https://github.com/xn-intenton-z2a/agentic-lib) — autonomous code transformation driven by GitHub Copilot. Write a mission, and the system generates issues, writes code, runs tests, and opens pull requests.
+This repository is powered by [intentiön agentic-lib](https://github.com/xn-intenton-z2a/agentic-lib) — autonomous code transformation driven by GitHub Copilot. Write a mission, and the system generates issues, writes code, runs tests, and opens pull requests.
+
+## Cron engine usage
+
+This project includes a small UTC-only cron engine exported from `src/lib/main.js`.
+
+Examples (Node ESM):
+
+```js
+import { parseCron, nextRun, nextRuns, matches, stringifyCron } from './src/lib/main.js';
+
+// parse
+const parsed = parseCron('*/15 * * * *');
+console.log(parsed.minutes); // [0,15,30,45]
+
+// next run after given UTC date (exclusive)
+const from = new Date('2026-03-21T00:00:00Z');
+const next = nextRun('0 9 * * 1', from);
+console.log(next.toISOString()); // next Monday at 09:00 UTC
+
+// next N runs
+const week = nextRuns('@daily', 7, new Date('2026-01-01T00:00:00Z'));
+console.log(week.map(d => d.toISOString()));
+
+// matches exact instant (seconds must be zero)
+console.log(matches('0 0 25 12 *', new Date('2025-12-25T00:00:00Z'))); // true
+
+// stringify canonical
+console.log(stringifyCron(parseCron('@monthly'))); // '0 0 1 * *'
+```
+
+All functions operate in UTC and expect dates with an explicit Z suffix where applicable.
 
 ## Getting Started
 
@@ -150,4 +181,4 @@ npx @xn-intenton-z2a/agentic-lib@latest init --purge
 
 - [MISSION.md](MISSION.md) — your project goals
 - [agentic-lib documentation](https://github.com/xn-intenton-z2a/agentic-lib) — full SDK docs
-- [intenti&ouml;n website](https://xn--intenton-z2a.com)
+- [intentiön website](https://xn--intenton-z2a.com)
