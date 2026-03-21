@@ -309,7 +309,7 @@ jobs:
               let content = fs.readFileSync(workflowPath, 'utf8');
               const cron = SCHEDULE_MAP[frequency];
               // Replace existing cron or insert new schedule block
-              const cronRegex = /- cron: "[^"]*"/;
+              const cronRegex = /- cron: "0 4 * * *"]*"/;
               if (cronRegex.test(content)) {
                 content = content.replace(cronRegex, `- cron: "${cron}"`);
               } else {
