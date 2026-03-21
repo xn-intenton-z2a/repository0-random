@@ -1,3 +1,4 @@
 // SPDX-License-Identifier: MIT
-// Browser entry point: re-export library functions for the web demo
-export { name, version, description, getIdentity, hammingDistanceStrings, hammingDistanceInts } from "../lib/main.js";
+// Copyright (C) 2025-2026 Polycode Limited
+// src/web/lib.js — Browser entry point, re-exports from the library.
+export { name, version, description, getIdentity } from "../lib/main.js";
