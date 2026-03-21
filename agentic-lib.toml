@@ -7,7 +7,6 @@
 
 [schedule]
 supervisor = "hourly"       # off | weekly | daily | hourly | continuous
-model = "gpt-5-mini"
 focus = "mission"                 # mission | maintenance
 
 [paths]
@@ -95,7 +94,7 @@ review-issues-cap = 2                  # max issues reviewed per batch (conserva
 min-resolved-issues = 1                # mission-complete: minimum closed-as-RESOLVED issues
 min-cumulative-transforms = 1          # mission-complete: minimum transform cycles
 max-source-todos = 2                   # mission-complete: max TODO comments in src
-acceptance-criteria-threshold = 50     # mission-complete: % acceptance criteria required
+acceptance-criteria-threshold = 60     # mission-complete: % acceptance criteria required
 
 [profiles.med]
 # Balanced — good results, middle ground.
@@ -174,19 +173,20 @@ screenshot-file = "SCREENSHOT_INDEX.png"
 
 [acceptance-criteria]
 # Auto-generated from MISSION.md on init. Updated by implementation-review.
-total = 8
-1 = { text = "Parsing `\"*/15 * * * *\"` returns a valid structured object", met = false }
-2 = { text = "Next run for `\"0 9 * * 1\"` returns the next Monday at 09:00 UTC", met = false }
-3 = { text = "Matching `\"0 0 25 12 *\"` against `2025-12-25T00:00:00Z` returns `true`", met = false }
-4 = { text = "Next 7 runs for `\"@daily\"` returns 7 consecutive daily dates", met = false }
-5 = { text = "Next 3 runs for `\"0 0 31 * *\"` starting from `2025-01-01` returns dates in Jan, Mar, May (skips months without 31 days)", met = false }
-6 = { text = "Invalid expressions throw descriptive errors", met = false }
-7 = { text = "All unit tests pass", met = false }
-8 = { text = "README documents usage with examples", met = false }
+total = 9
+1 = { text = "Converting `1994` to Roman produces `\"MCMXCIV\"`", met = false }
+2 = { text = "Converting `\"MCMXCIV\"` from Roman produces `1994`", met = false }
+3 = { text = "Converting `4` to Roman produces `\"IV\"`", met = false }
+4 = { text = "Round-trip holds for all n in 1–3999", met = false }
+5 = { text = "Converting `0` to Roman throws `RangeError`", met = false }
+6 = { text = "Converting `4000` to Roman throws `RangeError`", met = false }
+7 = { text = "Converting `\"IIII\"` from Roman throws `TypeError` (strict: only subtractive notation accepted)", met = false }
+8 = { text = "All unit tests pass", met = false }
+9 = { text = "README documents usage with examples", met = false }
 
 [init]
-timestamp = "2026-03-21T10:06:56.120Z"
+timestamp = "2026-03-21T10:29:18.565Z"
 mode = "purge"
-mission = "4-kyu-apply-cron-engine"
+mission = "6-kyu-understand-roman-numerals"
 mission-type = "random"
-version = "7.4.34"
+version = "7.4.35"
