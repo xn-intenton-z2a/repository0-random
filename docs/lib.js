@@ -61,7 +61,7 @@ export function diffSchemas(oldSchema, newSchema) {
   if (!oldSchema || !newSchema) return [];
   const left = resolveLocalRefs(oldSchema);
   const right = resolveLocalRefs(newSchema);
-  const changes = compareSchemas(left, right, "");
+  const changes = compareSchemas(left, right, "", true);
   return changes;
 }
 
@@ -91,7 +91,7 @@ export function formatChanges(changes, indent = 0) {
     }
     if (c.changeType === "nested-changed" && Array.isArray(c.changes)) {
       out += `${pad(indent + 2)}nested:\n`;
-      out += formatChanges(c.changes, indent + 4);
+      out += formatChanges(c.changes, indent + 4) + "\n";
     }
   }
   return out.trimEnd();

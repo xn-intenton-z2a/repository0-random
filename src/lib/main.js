@@ -104,6 +104,10 @@ export function resolveLocalRefs(schema) {
 }
 
 // --- Diff engine helpers ---
+function isObject(v) {
+  return v && typeof v === "object" && !Array.isArray(v);
+}
+
 function getType(schema) {
   if (!schema || typeof schema !== "object") return undefined;
   if (schema.type) return Array.isArray(schema.type) ? schema.type.join("|") : schema.type;
@@ -152,12 +156,26 @@ function pushChange(changes, change) {
   changes.push(change);
 }
 
-function compareSchemas(oldNode = {}, newNode = {}, path = "") {
+function compareSchemas(oldNode = {}, newNode = {}, path = "", checkNodeType = true) {
   const changes = [];
 
+  // node-level type change (useful for items and composition elements)
+  if (checkNodeType) {
+    const oldNodeType = getType(oldNode);
+    const newNodeType = getType(newNode);
+    if (oldNodeType !== undefined && newNodeType !== undefined && oldNodeType !== newNodeType) {
+      pushChange(changes, {
+        path: path || "",
+        changeType: "type-changed",
+        before: oldNodeType,
+        after: newNodeType,
+      });
+    }
+  }
+
   // properties
-  const oldProps = (oldNode && oldNode.properties) || {};
-  const newProps = (newNode && newNode.properties) || {};
+  const oldProps = (isObject(oldNode) && oldNode.properties) || {};
+  const newProps = (isObject(newNode) && newNode.properties) || {};
   const oldKeys = Object.keys(oldProps);
   const newKeys = Object.keys(newProps);
 
@@ -189,7 +207,7 @@ function compareSchemas(oldNode = {}, newNode = {}, path = "") {
     const newProp = newProps[key] || {};
     const currentPath = `${path}/properties/${key}`;
 
-    // type change
+    // type change for the property itself
     const oldType = getType(oldProp);
     const newType = getType(newProp);
     if (oldType !== undefined && newType !== undefined && oldType !== newType) {
@@ -231,14 +249,63 @@ function compareSchemas(oldNode = {}, newNode = {}, path = "") {
       }
     }
 
-    // nested schemas
-    const nestedChanges = compareSchemas(oldProp, newProp, currentPath);
+    // nested schemas (recurse but avoid duplicate type checks already handled above)
+    const nestedChanges = compareSchemas(oldProp, newProp, currentPath, false);
     if (nestedChanges.length > 0) {
       pushChange(changes, {
         path: currentPath,
         changeType: "nested-changed",
         changes: nestedChanges,
       });
+    }
+  }
+
+  // items (arrays)
+  const oldItems = oldNode && oldNode.items;
+  const newItems = newNode && newNode.items;
+  if (oldItems && !newItems) {
+    pushChange(changes, {
+      path: `${path}/items`,
+      changeType: "nested-changed",
+      changes: [{ path: `${path}/items`, changeType: "property-removed", before: getType(oldItems) || null }],
+    });
+  } else if (!oldItems && newItems) {
+    pushChange(changes, {
+      path: `${path}/items`,
+      changeType: "nested-changed",
+      changes: [{ path: `${path}/items`, changeType: "property-added", after: getType(newItems) || null }],
+    });
+  } else if (oldItems && newItems) {
+    const itemChanges = compareSchemas(oldItems, newItems, `${path}/items`, true);
+    if (itemChanges.length > 0) {
+      pushChange(changes, {
+        path: `${path}/items`,
+        changeType: "nested-changed",
+        changes: itemChanges,
+      });
+    }
+  }
+
+  // composition keywords: allOf, oneOf, anyOf
+  for (const kw of ["allOf", "oneOf", "anyOf"]) {
+    const oldArr = Array.isArray(oldNode && oldNode[kw]) ? oldNode[kw] : [];
+    const newArr = Array.isArray(newNode && newNode[kw]) ? newNode[kw] : [];
+    const maxLen = Math.max(oldArr.length, newArr.length);
+    const compChanges = [];
+    for (let i = 0; i < maxLen; i++) {
+      const o = oldArr[i];
+      const n = newArr[i];
+      if (o && !n) {
+        compChanges.push({ path: `${path}/${kw}/${i}`, changeType: "property-removed", before: getType(o) || null });
+      } else if (!o && n) {
+        compChanges.push({ path: `${path}/${kw}/${i}`, changeType: "property-added", after: getType(n) || null });
+      } else if (o && n) {
+        const sub = compareSchemas(o, n, `${path}/${kw}/${i}`, true);
+        if (sub.length > 0) compChanges.push(...sub);
+      }
+    }
+    if (compChanges.length > 0) {
+      pushChange(changes, { path: `${path}/${kw}`, changeType: "nested-changed", changes: compChanges });
     }
   }
 
@@ -267,7 +334,7 @@ export function diffSchemas(oldSchema, newSchema) {
   if (!oldSchema || !newSchema) return [];
   const left = resolveLocalRefs(oldSchema);
   const right = resolveLocalRefs(newSchema);
-  const changes = compareSchemas(left, right, "");
+  const changes = compareSchemas(left, right, "", true);
   return changes;
 }
 
@@ -297,7 +364,7 @@ export function formatChanges(changes, indent = 0) {
     }
     if (c.changeType === "nested-changed" && Array.isArray(c.changes)) {
       out += `${pad(indent + 2)}nested:\n`;
-      out += formatChanges(c.changes, indent + 4);
+      out += formatChanges(c.changes, indent + 4) + "\n";
     }
   }
   return out.trimEnd();
