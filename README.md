@@ -110,49 +110,40 @@ MISSION.md -> [supervisor] -> dispatch workflows -> Issue -> Code -> Test -> PR 
 
 The pipeline runs as GitHub Actions workflows. An LLM supervisor gathers repository context and dispatches other workflows. Each workflow uses the Copilot SDK to make targeted changes.
 
-## FizzBuzz Usage
+## Configuration
 
-This repository implements a small FizzBuzz library exported from `src/lib/main.js`.
+Edit `agentic-lib.toml` to tune the system:
 
-- fizzBuzzSingle(n): returns the FizzBuzz result for a single positive integer `n` ("Fizz", "Buzz", "FizzBuzz" or the number as a string).
-- fizzBuzz(n): returns an array of strings for the numbers 1..n, applying the FizzBuzz rules. `fizzBuzz(0)` returns an empty array.
+```toml
+[schedule]
+supervisor = "off"          # off | weekly | daily | hourly | continuous
+focus = "mission"           # mission | maintenance
 
-Examples (Node / ESM):
+[tuning]
+profile = "max"             # min | med | max
+model = "gpt-5-mini"       # gpt-5-mini | claude-sonnet-4 | gpt-4.1
 
-```js
-import { fizzBuzz, fizzBuzzSingle } from './src/lib/main.js';
-
-console.log(fizzBuzzSingle(3)); // -> "Fizz"
-console.log(fizzBuzzSingle(5)); // -> "Buzz"
-console.log(fizzBuzzSingle(15)); // -> "FizzBuzz"
-console.log(fizzBuzzSingle(7)); // -> "7"
-
-console.log(fizzBuzz(15)); // -> [ '1', '2', 'Fizz', ..., 'FizzBuzz' ]
-console.log(fizzBuzz(0));  // -> []
+[mission-complete]
+acceptance-criteria-threshold = 50   # % of criteria that must be met
+min-resolved-issues = 1              # minimum closed issues
 ```
-
-Browser (site demo):
-
-```html
-<script type="module">
-  import { fizzBuzz } from './lib.js';
-  document.getElementById('demo-output').textContent = JSON.stringify(fizzBuzz(15), null, 2);
-</script>
-```
-
-Errors:
-
-- Non-integer inputs throw TypeError
-- Negative numbers (where applicable) throw RangeError
 
 ## File Layout
 
 ```
 src/lib/main.js              <- library (browser-safe)
 src/web/index.html            <- web page (imports ./lib.js)
-tests/unit/*.test.js          <- unit tests
+tests/unit/main.test.js       <- unit tests
 tests/behaviour/              <- Playwright E2E
 docs/                         <- build output for GitHub Pages
+```
+
+## Updating
+
+The `init` workflow updates the agentic infrastructure automatically. To update manually:
+
+```bash
+npx @xn-intenton-z2a/agentic-lib@latest init --purge
 ```
 
 ## Links
