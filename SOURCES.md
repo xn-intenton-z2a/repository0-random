@@ -9,14 +9,13 @@ Reference material and documentation sources for this project.
 - https://www.npmjs.com/package/cron-parser
 - https://github.com/harrisiirak/cron-parser
 - https://github.com/node-cron/node-cron
+- https://www.npmjs.com/package/node-cron
 - https://github.com/jmrozanec/cron-utils
 - https://cronutils.com
 - https://github.com/bunkat/later
 - https://bunkat.github.io/later/
 - https://pypi.org/project/croniter/
 - https://github.com/kiorky/croniter
+- https://www.npmjs.com/package/cron
 
 The maintain-library workflow will process these into `library/` documents.
-
-- node-cron: https://www.npmjs.com/package/node-cron
-- cron: https://www.npmjs.com/package/cron
