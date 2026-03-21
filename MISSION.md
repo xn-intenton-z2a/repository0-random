@@ -23,11 +23,11 @@ A JavaScript library that parses cron expressions, computes next run times, and 
 
 ## Acceptance Criteria
 
-- [ ] Parsing `"*/15 * * * *"` returns a valid structured object
-- [ ] Next run for `"0 9 * * 1"` returns the next Monday at 09:00 UTC
-- [ ] Matching `"0 0 25 12 *"` against `2025-12-25T00:00:00Z` returns `true`
-- [ ] Next 7 runs for `"@daily"` returns 7 consecutive daily dates
-- [ ] Next 3 runs for `"0 0 31 * *"` starting from `2025-01-01` returns dates in Jan, Mar, May (skips months without 31 days)
-- [ ] Invalid expressions throw descriptive errors
+- [x] Parsing `"*/15 * * * *"` returns a valid structured object
+- [x] Next run for `"0 9 * * 1"` returns the next Monday at 09:00 UTC
+- [x] Matching `"0 0 25 12 *"` against `2025-12-25T00:00:00Z` returns `true`
+- [x] Next 7 runs for `"@daily"` returns 7 consecutive daily dates
+- [x] Next 3 runs for `"0 0 31 * *"` starting from `2025-01-01` returns dates in Jan, Mar, May (skips months without 31 days)
+- [x] Invalid expressions throw descriptive errors
 - [ ] All unit tests pass
 - [ ] README documents usage with examples
