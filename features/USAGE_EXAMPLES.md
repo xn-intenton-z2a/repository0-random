@@ -1,17 +1,15 @@
 # USAGE_EXAMPLES
 
 Summary
-Examples and recommended README content showing the public API usage for both string and integer Hamming distance functions; these examples are intended to be small, copy-paste friendly lines that will be included in README.md.
+Canonical, copy-paste-friendly examples for README demonstrating the public API: hammingString and hammingBits.
 
-Examples to include in README (plain lines)
-- Compute Unicode-aware string hamming distance: hammingDistanceStrings('karolin', 'kathrin') -> 3
-- Compute empty-string distance: hammingDistanceStrings('', '') -> 0
-- Compute bit-level distance (Numbers): hammingDistanceIntegers(1, 4) -> 2
-- Compute bit-level distance (BigInt): hammingDistanceIntegers(9007199254740993n, 9007199254740995n) -> 2
+Examples (to include in README.md)
+- hammingString('karolin', 'kathrin') -> 3
+- hammingString('', '') -> 0
+- hammingBits(1, 4) -> 2
+- hammingBits(0n, 0n) -> 0
+- hammingBits(9007199254740993n, 9007199254740995n) -> 2
 
 Acceptance criteria
-- README contains at least the four examples above demonstrating the API for strings and integers.
-- Examples are plain, use the public named exports, and show expected return values.
-
-Notes
-- The examples should be added to README.md during implementation work; this feature file defines the canonical examples to be used.
+- README contains at least the examples above using the public named exports and showing expected return values.
+- Examples are plain, concise, and ready to be copy-pasted by users.

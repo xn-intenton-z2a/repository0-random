@@ -1,22 +1,22 @@
 # HAMMING_INTEGERS
 
 Summary
-A feature to implement bit-level Hamming distance between non-negative integers. Supports both Number (32-bit path) and BigInt without silent truncation.
+A feature specifying bit-level Hamming distance for non-negative integers. The repository exposes this functionality as the named export hammingBits from src/lib/main.js and must handle both Number and BigInt inputs without silent truncation.
 
 Motivation
-JavaScript Numbers are subject to 32-bit truncation when using bitwise operators; to meet correctness for large integers and the mission acceptance criteria, the implementation must support BigInt and explicit validation.
+Bitwise operators in JavaScript can silently truncate Numbers to 32 bits; to meet correctness and the mission acceptance criteria large integers must be handled via a BigInt path.
 
 Specification
-- Export a named function hammingDistanceIntegers(a, b) from src/lib/main.js.
-- Inputs: accept Number or BigInt for each argument. If types are mixed, coerce both to BigInt and run the BigInt path (document performance implications).
+- Export a named function hammingBits(a, b) from src/lib/main.js.
+- Inputs: accept Number (integer) or BigInt for each argument. If types are mixed, coerce both to BigInt and use the BigInt path.
 - Validation:
   - If an argument is neither a Number nor a BigInt, throw TypeError.
   - If a Number argument is not an integer (Number.isInteger false), throw TypeError.
   - If any numeric value is negative, throw RangeError.
 - Behavior:
-  - Number path: when both args are Numbers and both are in the safe 0..0xFFFFFFFF range, compute XOR using (a ^ b) coerced to unsigned 32-bit and return popcount using a 32-bit SWAR or Kernighan popcount.
-  - BigInt path: convert operands to BigInt and compute X = A ^ B; count set bits using Kernighan loop with BigInt arithmetic and return a Number count.
-  - For mixed-type calls or Numbers outside 0..0xFFFFFFFF, prefer the BigInt path to avoid truncation.
+  - Normalize to BigInt for bitwise comparison when either input is BigInt or when Number inputs could be larger than 32 bits.
+  - Compute XOR (a ^ b) using BigInt arithmetic when necessary, and count set bits using a loop (Kernighan or equivalent). Return the count as a Number.
+  - The function must not silently truncate higher bits for large inputs.
 
 Acceptance criteria
 - Bit-level Hamming distance between 1 and 4 is 2.
@@ -25,4 +25,4 @@ Acceptance criteria
 - Passing a negative integer throws RangeError.
 
 Notes
-- The function should return a regular Number for the count; document that extremely large bit-widths may produce very large counts but typical usage will stay within safe Number ranges.
+- The function returns a regular Number count; for extremely large bit widths the numeric count may exceed typical ranges but must be correct.
