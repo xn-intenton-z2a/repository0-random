@@ -7,4 +7,8 @@ describe("Stringify Cron", () => {
     expect(stringifyCron(parseCron('*/15 * * * *'))).toBe('*/15 * * * *');
     expect(stringifyCron(parseCron('@monthly'))).toBe('0 0 1 * *');
   });
+
+  test("stringify emits 6-field when seconds present", () => {
+    expect(stringifyCron(parseCron('5 */15 * * * *'))).toBe('5 */15 * * * *');
+  });
 });

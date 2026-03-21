@@ -76,8 +76,8 @@
     </div>
 
     <div class="feature" id="feature-seconds">
-      <h3>Seconds Demo</h3>
-      <p>6-field cron example (seconds-first) and a short sequence demonstration.</p>
+      <h3>Seconds (6-field)</h3>
+      <p>6-field cron expressions include seconds as the first field. Example: '5 */15 * * * *'</p>
       <pre id="seconds-output" class="todo">loading...</pre>
     </div>
   </div>
@@ -147,10 +147,10 @@
         document.getElementById('shortcuts-output').textContent = 'Error: ' + e.message;
       }
 
-      // Seconds demo: '*/10 * * * * *' -> next few occurrences
+      // Seconds (6-field) demo
       try {
-        const runs = lib.nextRuns('*/10 * * * * *', 3, new Date('2026-01-01T00:00:00Z'));
-        document.getElementById('seconds-output').textContent = JSON.stringify(runs.map(d => d.toISOString()), null, 2);
+        const p6 = lib.parseCron('5 */15 * * * *');
+        document.getElementById('seconds-output').textContent = JSON.stringify({ seconds: p6.seconds, minutes: p6.minutes }, null, 2);
       } catch (e) {
         document.getElementById('seconds-output').textContent = 'Error: ' + e.message;
       }

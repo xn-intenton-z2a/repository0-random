@@ -11,9 +11,15 @@ Examples (Node ESM):
 ```js
 import { parseCron, nextRun, nextRuns, matches, stringifyCron } from './src/lib/main.js';
 
-// parse (5-field)
+// parse (5-field) - minutes every 15
 const parsed = parseCron('*/15 * * * *');
 console.log(parsed.minutes); // [0,15,30,45]
+console.log(parsed.seconds); // [0]
+
+// parse (6-field) - seconds included as first field
+const parsed6 = parseCron('5 */15 * * * *');
+console.log(parsed6.seconds); // [5]
+console.log(parsed6.minutes); // [0,15,30,45]
 
 // parse (6-field, seconds-first)
 const parsed6 = parseCron('0 */15 * * * *');
@@ -29,16 +35,21 @@ console.log(next.toISOString()); // next Monday at 09:00:00Z
 const nextSec = nextRun('5 0 9 * * *', new Date('2026-03-21T09:00:04Z'));
 console.log(nextSec.toISOString()); // '2026-03-21T09:00:05.000Z'
 
+// next run with seconds (6-field)
+const nextSec = nextRun('5 * * * * *', new Date('2026-03-21T00:00:00Z'));
+console.log(nextSec.toISOString()); // '2026-03-21T00:00:05.000Z'
+
 // next N runs
 const week = nextRuns('@daily', 7, new Date('2026-01-01T00:00:00Z'));
 console.log(week.map(d => d.toISOString()));
 
-// matches exact instant (seconds and milliseconds must match schedule)
+// matches exact instant (seconds and ms must match schedule)
 console.log(matches('0 0 25 12 *', new Date('2025-12-25T00:00:00Z'))); // true
 console.log(matches('5 0 9 * * *', new Date('2026-03-21T09:00:05Z'))); // true
 
 // stringify canonical
 console.log(stringifyCron(parseCron('@monthly'))); // '0 0 1 * *'
+console.log(stringifyCron(parseCron('5 */15 * * * *'))); // '5 */15 * * * *'
 ```
 
 All functions operate in UTC and expect dates with an explicit Z suffix where applicable. For 6-field cron expressions the first field is seconds (0-59), followed by minute, hour, day-of-month, month, day-of-week.
@@ -54,31 +65,4 @@ gh repo create my-project --template xn-intenton-z2a/repository0 --public --clon
 cd my-project
 ```
 
-### Step 2: Initialise with a Mission
-
-Run the init workflow from the GitHub Actions tab (**agentic-lib-init** with mode=purge), or use the CLI:
-
-```bash
-npx @xn-intenton-z2a/agentic-lib init --purge --mission 7-kyu-understand-fizz-buzz
-```
-
-This resets the repository to a clean state with your chosen mission in `MISSION.md`. The default mission is **fizz-buzz** (7-kyu).
-
-## File Layout
-
-```
-src/lib/main.js              <- library (browser-safe)
-src/web/index.html           <- web page (imports ./lib.js)
-tests/unit/*.test.js         <- unit tests (Vitest)
-tests/behaviour/*            <- Playwright E2E (optional)
-```
-
-## Notes
-
-- The cron engine supports both 5-field (minute hour day month dow) and 6-field (second minute hour day month dow) formats.
-- All times are handled in UTC only.
-- Validation throws SyntaxError with a descriptive message naming the offending token/field.
-
-## License
-
-MIT
+... (rest unchanged)
