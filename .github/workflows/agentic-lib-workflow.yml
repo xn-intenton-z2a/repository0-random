@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (C) 2025-2026 Polycode Limited
 # .github/workflows/agentic-lib-workflow.yml
-# Schedule updated: 2026-03-21T02:03:38.862Z
 #
 # Main autonomous pipeline: supervisor + maintain + review + dev + PR cleanup.
 # Replaces agent-supervisor, agent-flow-transform, agent-flow-review,
@@ -490,8 +489,7 @@ jobs:
                 const files = fs.readdirSync(sourcePath).filter(f => f.endsWith('.js') || f.endsWith('.ts'));
                 sourceStats = files.map(f => {
                   const content = fs.readFileSync(`${sourcePath}${f}`, 'utf8');
-                  const lines = content.split('
-').length;
+                  const lines = content.split('\n').length;
                   const exports = [...content.matchAll(/export\s+(?:async\s+)?(?:function|const|class)\s+(\w+)/g)].map(m => m[1]);
                   return { file: f, lines, exports };
                 });
@@ -1700,8 +1698,7 @@ jobs:
             });
 
             // W7: Build PR body with Closes for all issues
-            const closesLines = issueNumbers.map(n => `Closes #${n}`).join('
-');
+            const closesLines = issueNumbers.map(n => `Closes #${n}`).join('\n');
             const prTitle = issueNumbers.length > 1
               ? `fix: resolve issues ${issueNumbers.map(n => '#' + n).join(', ')}`
               : `fix: resolve issue #${issueNumber}`;
@@ -1714,9 +1711,7 @@ jobs:
               const { data: pr } = await github.rest.pulls.create({
                 owner, repo,
                 title: prTitle,
-                body: `${closesLines}
-
-Automated transformation.`,
+                body: `${closesLines}\n\nAutomated transformation.`,
                 head: branchName, base: 'main',
               });
               prNumber = pr.number;
