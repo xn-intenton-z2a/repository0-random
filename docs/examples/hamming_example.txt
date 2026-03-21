@@ -1,0 +1,5 @@
+karolin vs kathrin => 3
+"" vs "" => 0
+1 vs 4 => 2
+0 vs 0 => 0
+astral emoji: a😀b vs a😃b => 1

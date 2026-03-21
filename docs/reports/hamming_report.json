@@ -1,0 +1,10 @@
+{
+  "stringExamples": [
+    { "a": "karolin", "b": "kathrin", "distance": 3 },
+    { "a": "", "b": "", "distance": 0 }
+  ],
+  "bitExamples": [
+    { "a": 1, "b": 4, "distance": 2 },
+    { "a": 0, "b": 0, "distance": 0 }
+  ]
+}
