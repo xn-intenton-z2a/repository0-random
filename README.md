@@ -1,10 +1,8 @@
 # repo
 
-This repository is powered by [intenti&ouml;n agentic-lib](https://github.com/xn-intenton-z2a/agentic-lib) — autonomous code transformation driven by GitHub Copilot.
+A minimal library demonstrating Hamming distance utilities for strings and integers.
 
-## Hamming distance functions
-
-The library exports two Hamming distance helpers:
+This repository provides two helpers:
 
 - `hammingString(a, b)` — counts differing Unicode code points between two strings of equal length.
   - Throws `TypeError` if inputs are not strings.
@@ -14,7 +12,7 @@ The library exports two Hamming distance helpers:
   - Throws `TypeError` if inputs are not integers.
   - Throws `RangeError` if either integer is negative.
 
-Examples (Node/Esm):
+Usage (Node / ESM):
 
 ```js
 import { hammingString, hammingBits } from './src/lib/main.js';
@@ -26,18 +24,8 @@ console.log(hammingBits(1, 4)); // 2
 console.log(hammingBits(0, 0)); // 0
 ```
 
-Browser (the demo page at `src/web/index.html` shows these functions in action):
+Browser (demo):
 
-```html
-<script type="module">
-  import { hammingString, hammingBits } from './lib.js';
-  console.log(hammingString('karolin', 'kathrin'));
-  console.log(hammingBits(1,4));
-</script>
-```
+Open `src/web/index.html` in a browser (or run `npm run start`) to see a small demo that shows the library identity and example outputs.
 
-## Getting Started
-
-Follow the original Getting Started instructions in this README for setup and testing.
-
-(Other documentation unchanged.)
+License: MIT
