@@ -17,6 +17,8 @@ Reference material and documentation sources for this project.
 - https://pypi.org/project/croniter/
 - https://github.com/kiorky/croniter
 - https://www.npmjs.com/package/cron
+- https://github.com/robfig/cron
+- https://pkg.go.dev/github.com/robfig/cron/v3
 
 # Additional references added for implementation details (UTC, parsing, date formats)
 - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date
