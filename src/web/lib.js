@@ -1,4 +1,3 @@
 // SPDX-License-Identifier: MIT
-// Copyright (C) 2025-2026 Polycode Limited
-// src/web/lib.js — Browser entry point, re-exports from the library.
+// Browser entry point: re-export the library (already supports seconds)
 export { name, version, description, getIdentity, parseCron, nextRun, nextRuns, matches, stringifyCron } from "../lib/main.js";

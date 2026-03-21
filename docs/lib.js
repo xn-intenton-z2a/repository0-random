@@ -26,13 +26,19 @@ export function parseCron(expression) {
   }
 
   const fields = expanded.split(/\s+/).filter(Boolean);
-  if (fields.length !== 5) {
-    if (fields.length === 6) throw new SyntaxError('6-field cron (seconds) is not supported');
-    throw new SyntaxError('Cron expression must have 5 fields');
+  if (fields.length !== 5 && fields.length !== 6) {
+    throw new SyntaxError('Cron expression must have 5 or 6 fields');
   }
 
-  const [minuteTok, hourTok, domTok, monthTok, dowTok] = fields;
+  let secTok, minuteTok, hourTok, domTok, monthTok, dowTok;
+  if (fields.length === 5) {
+    secTok = '0';
+    [minuteTok, hourTok, domTok, monthTok, dowTok] = fields;
+  } else {
+    [secTok, minuteTok, hourTok, domTok, monthTok, dowTok] = fields;
+  }
 
+  const seconds = parseField(secTok, 'second', 0, 59);
   const minutes = parseField(minuteTok, 'minute', 0, 59);
   const hours = parseField(hourTok, 'hour', 0, 23);
   const dayOfMonth = parseField(domTok, 'dayOfMonth', 1, 31);
@@ -40,12 +46,15 @@ export function parseCron(expression) {
   const dayOfWeek = parseField(dowTok, 'dayOfWeek', 0, 6);
 
   return {
+    seconds,
     minutes,
     hours,
     dayOfMonth,
     month,
     dayOfWeek,
-    original: expr
+    original: expr,
+    // internal flag used by stringify/iteration to prefer 6-field when user provided seconds
+    _hasSeconds: fields.length === 6
   };
 }
 
@@ -56,9 +65,6 @@ export function matches(expressionOrParsed, dateInput) {
   const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput instanceof Date ? dateInput : new Date();
   if (isNaN(date.getTime())) throw new SyntaxError('Invalid date');
 
-  // match exact minute instants only (seconds and milliseconds must be zero)
-  if (date.getUTCSeconds() !== 0 || date.getUTCMilliseconds() !== 0) return false;
-
   return dateMatchesParsed(parsed, date);
 }
 
@@ -66,11 +72,13 @@ export function nextRun(expressionOrParsed, fromDate = new Date()) {
   const parsed = typeof expressionOrParsed === 'string' ? parseCron(expressionOrParsed) : expressionOrParsed;
   if (!parsed || typeof parsed !== 'object') throw new SyntaxError('Invalid parsed cron');
 
+  // choose step granularity: if seconds are only 0, step by minutes, otherwise by seconds
+  const stepMs = (parsed.seconds.length === 1 && parsed.seconds[0] === 0) ? 60_000 : 1000;
+
   let current = new Date(fromDate.getTime());
-  // zero seconds/milliseconds
-  current.setUTCSeconds(0, 0);
-  // move strictly after
-  current = new Date(current.getTime() + 60_000);
+  current.setUTCMilliseconds(0);
+  // start strictly after the provided date
+  current = new Date(current.getTime() + stepMs);
 
   const horizonYears = 5;
   const horizonMs = horizonYears * 365 * 24 * 60 * 60 * 1000;
@@ -78,21 +86,26 @@ export function nextRun(expressionOrParsed, fromDate = new Date()) {
 
   while (current.getTime() <= deadline) {
     // skip months that don't include any of the parsed.dayOfMonth values
+    const y = current.getUTCFullYear();
     const mon = current.getUTCMonth() + 1;
-    const domsInThisMonth = parsed.dayOfMonth.filter(d => d <= daysInMonth(current.getUTCFullYear(), mon));
+    const domsInThisMonth = parsed.dayOfMonth.filter(d => d <= daysInMonth(y, mon));
     if (domsInThisMonth.length === 0) {
-      // jump to first day of next month
-      const y = current.getUTCFullYear();
+      // jump to first day of next month at 00:00:00
       const m = current.getUTCMonth();
       current = new Date(Date.UTC(y, m + 1, 1, 0, 0, 0));
+      current.setUTCMilliseconds(0);
+      // align to step
+      if (stepMs === 60_000) current.setUTCSeconds(0);
+      // move to next candidate
+      current = new Date(current.getTime() + stepMs);
       continue;
     }
 
     // Check match
     if (dateMatchesParsed(parsed, current)) return new Date(current.getTime());
 
-    // advance by 1 minute
-    current = new Date(current.getTime() + 60_000);
+    // advance by step
+    current = new Date(current.getTime() + stepMs);
   }
 
   throw new Error('No run time found within horizon');
@@ -100,31 +113,46 @@ export function nextRun(expressionOrParsed, fromDate = new Date()) {
 
 export function nextRuns(expressionOrParsed, n, fromDate = new Date()) {
   if (!Number.isInteger(n) || n <= 0) throw new SyntaxError('n must be a positive integer');
+
+  const parsed = typeof expressionOrParsed === 'string' ? parseCron(expressionOrParsed) : expressionOrParsed;
+  if (!parsed || typeof parsed !== 'object') throw new SyntaxError('Invalid parsed cron');
+
+  const stepMs = (parsed.seconds.length === 1 && parsed.seconds[0] === 0) ? 60_000 : 1000;
+
   const result = [];
-  let parsed = typeof expressionOrParsed === 'string' ? parseCron(expressionOrParsed) : expressionOrParsed;
   let cursor = new Date(fromDate.getTime());
+  // align cursor ms to 0
+  cursor.setUTCMilliseconds(0);
+
   for (let i = 0; i < n; i++) {
     const next = nextRun(parsed, cursor);
     result.push(next);
     // move cursor to the instant just after the found run
-    cursor = new Date(next.getTime() + 60_000);
+    cursor = new Date(next.getTime() + stepMs);
   }
   return result;
 }
 
 export function stringifyCron(parsed) {
   if (!parsed || typeof parsed !== 'object') throw new SyntaxError('Invalid parsed cron');
+
   // if original was a shortcut, return expanded canonical
   if (typeof parsed.original === 'string' && parsed.original.startsWith('@')) {
     const lower = parsed.original.toLowerCase();
     if (SHORTCUTS[lower]) return SHORTCUTS[lower];
   }
 
+  const secTok = detectTokenFromValues(parsed.seconds || [0], 0, 59);
   const mTok = detectTokenFromValues(parsed.minutes, 0, 59);
   const hTok = detectTokenFromValues(parsed.hours, 0, 23);
   const domTok = detectTokenFromValues(parsed.dayOfMonth, 1, 31);
   const monTok = detectTokenFromValues(parsed.month, 1, 12);
   const dowTok = detectTokenFromValues(parsed.dayOfWeek, 0, 6);
 
-  return `${mTok} ${hTok} ${domTok} ${monTok} ${dowTok}`;
+  // if seconds is exactly [0], return 5-field canonical string
+  if (parsed.seconds && parsed.seconds.length === 1 && parsed.seconds[0] === 0) {
+    return `${mTok} ${hTok} ${domTok} ${monTok} ${dowTok}`;
+  }
+
+  return `${secTok} ${mTok} ${hTok} ${domTok} ${monTok} ${dowTok}`;
 }
