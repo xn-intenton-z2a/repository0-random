@@ -15,6 +15,8 @@
     .identity dt { font-weight: bold; color: #666; }
     .identity dd { margin: 0 0 0.5rem 0; font-size: 1.1rem; }
     #demo-output { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 6px; font-family: monospace; white-space: pre-wrap; min-height: 2rem; }
+    .demo-block { margin: 1rem 0; }
+    .demo-label { font-weight: 600; margin-bottom: 0.25rem; }
   </style>
 </head>
 <body>
@@ -29,16 +31,48 @@
   </div>
   <h2>Output</h2>
   <div id="demo-output">Loading library...</div>
+
+  <div class="demo-block">
+    <div class="demo-label">Hamming (strings): <small>hammingString("karolin","kathrin")</small></div>
+    <div id="hamming-string-result" data-input-a="karolin" data-input-b="kathrin">…</div>
+  </div>
+
+  <div class="demo-block">
+    <div class="demo-label">Hamming (bits): <small>hammingBits(1, 4)</small></div>
+    <div id="hamming-bits-result" data-input-a="1" data-input-b="4">…</div>
+  </div>
+
   <h2>About</h2>
   <p>This website uses the library. See <a href="https://github.com/xn-intenton-z2a/repository0">the repository</a> for source code and mission details.</p>
   <script type="module">
     try {
-      const { name, version, description } = await import('./lib.js');
+      const lib = await import('./lib.js');
+      const { name, version, description, hammingString, hammingBits } = lib;
       document.getElementById('lib-name').textContent = name;
       document.getElementById('lib-version').textContent = version;
       document.getElementById('lib-description').textContent = description || '(no description)';
       document.getElementById('demo-output').textContent = JSON.stringify({ name, version, description }, null, 2);
       document.title = name + ' v' + version;
+
+      // Demo outputs
+      try {
+        const a = document.getElementById('hamming-string-result').dataset.inputA;
+        const b = document.getElementById('hamming-string-result').dataset.inputB;
+        const sres = hammingString(a, b);
+        document.getElementById('hamming-string-result').textContent = String(sres);
+      } catch (e) {
+        document.getElementById('hamming-string-result').textContent = 'Error: ' + e.message;
+      }
+
+      try {
+        const ax = BigInt(document.getElementById('hamming-bits-result').dataset.inputA);
+        const bx = BigInt(document.getElementById('hamming-bits-result').dataset.inputB);
+        const bres = hammingBits(ax, bx);
+        document.getElementById('hamming-bits-result').textContent = String(bres);
+      } catch (e) {
+        document.getElementById('hamming-bits-result').textContent = 'Error: ' + e.message;
+      }
+
     } catch (e) {
       document.getElementById('lib-version').textContent = '(error)';
       document.getElementById('lib-description').textContent = e.message;
