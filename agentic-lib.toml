@@ -6,8 +6,7 @@
 # During init:
 
 [schedule]
-supervisor = "off"       # off | weekly | daily | hourly | continuous
-model = "gpt-5-mini"
+supervisor = "hourly"       # off | weekly | daily | hourly | continuous
 focus = "mission"                 # mission | maintenance
 
 [paths]
@@ -174,21 +173,19 @@ screenshot-file = "SCREENSHOT_INDEX.png"
 
 [acceptance-criteria]
 # Auto-generated from MISSION.md on init. Updated by implementation-review.
-total = 10
-1 = { text = "Diffing two schemas returns an array of change objects", met = false }
-2 = { text = "Detects added and removed properties", met = false }
-3 = { text = "Detects type changes (e.g. `\"string\"` → `\"number\"`)", met = false }
-4 = { text = "Detects `required` array changes", met = false }
-5 = { text = "Handles nested schemas recursively (properties within properties)", met = false }
-6 = { text = "Resolves local `$ref` before diffing", met = false }
-7 = { text = "Classifying a removed required property returns `\"breaking\"`", met = false }
-8 = { text = "Formatting changes produces readable text output", met = false }
-9 = { text = "All unit tests pass", met = false }
-10 = { text = "README documents usage with examples", met = false }
+total = 8
+1 = { text = "Parsing `\"*/15 * * * *\"` returns a valid structured object", met = false }
+2 = { text = "Next run for `\"0 9 * * 1\"` returns the next Monday at 09:00 UTC", met = false }
+3 = { text = "Matching `\"0 0 25 12 *\"` against `2025-12-25T00:00:00Z` returns `true`", met = false }
+4 = { text = "Next 7 runs for `\"@daily\"` returns 7 consecutive daily dates", met = false }
+5 = { text = "Next 3 runs for `\"0 0 31 * *\"` starting from `2025-01-01` returns dates in Jan, Mar, May (skips months without 31 days)", met = false }
+6 = { text = "Invalid expressions throw descriptive errors", met = false }
+7 = { text = "All unit tests pass", met = false }
+8 = { text = "README documents usage with examples", met = false }
 
 [init]
-timestamp = "2026-03-21T10:34:41.669Z"
+timestamp = "2026-03-21T16:49:17.697Z"
 mode = "purge"
-mission = "4-kyu-analyze-json-schema-diff"
+mission = "4-kyu-apply-cron-engine"
 mission-type = "random"
-version = "7.4.35"
+version = "7.4.38"

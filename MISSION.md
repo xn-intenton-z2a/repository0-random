@@ -1,48 +1,33 @@
 # Mission
 
-A JavaScript library that computes structured diffs between two JSON Schema (Draft-07) documents, helping API developers track and validate schema changes across versions.
+A JavaScript library that parses cron expressions, computes next run times, and checks schedule matches.
 
 ## Required Capabilities
 
-- Compare two JSON Schema objects and return an array of change records.
-- Render changes as human-readable text or JSON.
-- Classify each change as `"breaking"`, `"compatible"`, or `"informational"`.
-
-## Change Record Format
-
-Each change is a plain object with these fields:
-
-```js
-{ path: "/properties/email", changeType: "type-changed", before: "string", after: "number" }
-```
-
-Supported `changeType` values:
-
-- `property-added` / `property-removed`
-- `type-changed`
-- `required-added` / `required-removed`
-- `enum-value-added` / `enum-value-removed`
-- `description-changed`
-- `nested-changed` (recursive diff of sub-schemas)
+- Parse a cron expression (standard 5-field, or 6-field with seconds) into a structured object. Support ranges (`1-5`), lists (`1,3,5`), steps (`*/15`), and wildcards (`*`).
+- Compute the next run time after a given date (default: now).
+- Compute the next N run times after a given date.
+- Check whether a specific date matches a cron expression.
+- Convert a parsed cron object back to a cron string.
+- Support shortcuts: `@yearly` (`0 0 1 1 *`), `@monthly` (`0 0 1 * *`), `@weekly` (`0 0 * * 0`), `@daily` (`0 0 * * *`), `@hourly` (`0 * * * *`).
 
 ## Requirements
 
-- Resolve local `$ref` pointers (JSON Pointer within the same document) before diffing. Remote `$ref` is out of scope — throw if encountered.
-- Traverse `properties`, `items`, `allOf`, `oneOf`, `anyOf` recursively.
-- Export all public API as named exports from `src/lib/main.js`.
+- Handle edge cases: month-end boundaries (e.g. `0 0 31 * *` fires only in months with 31 days — skip months with fewer days, do not fire on the last day as a fallback), leap years (Feb 29 fires only in leap years).
+- All times are UTC. Timezone support is out of scope.
+- Validate expressions: throw on invalid syntax with a descriptive error message.
 - No external runtime dependencies.
-- Comprehensive unit tests covering each change type, nested schemas, and `$ref` resolution.
-- README with usage examples showing a before/after schema pair.
+- Export all public API as named exports from `src/lib/main.js`.
+- Comprehensive unit tests covering field combinations, special strings, edge cases, and invalid input.
+- README with usage examples.
 
 ## Acceptance Criteria
 
-- [x] Diffing two schemas returns an array of change objects
-- [ ] Detects added and removed properties
-- [x] Detects type changes (e.g. `"string"` → `"number"`)
-- [x] Detects `required` array changes
-- [ ] Handles nested schemas recursively (properties within properties)
-- [x] Resolves local `$ref` before diffing
-- [x] Classifying a removed required property returns `"breaking"`
-- [x] Formatting changes produces readable text output
+- [ ] Parsing `"*/15 * * * *"` returns a valid structured object
+- [ ] Next run for `"0 9 * * 1"` returns the next Monday at 09:00 UTC
+- [ ] Matching `"0 0 25 12 *"` against `2025-12-25T00:00:00Z` returns `true`
+- [ ] Next 7 runs for `"@daily"` returns 7 consecutive daily dates
+- [ ] Next 3 runs for `"0 0 31 * *"` starting from `2025-01-01` returns dates in Jan, Mar, May (skips months without 31 days)
+- [ ] Invalid expressions throw descriptive errors
 - [ ] All unit tests pass
-- [x] README documents usage with examples
+- [ ] README documents usage with examples
