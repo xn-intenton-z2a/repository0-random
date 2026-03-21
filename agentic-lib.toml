@@ -39,7 +39,7 @@ test = "npm ci && npm test"
 [tuning]
 # Profile sets defaults for all tuning and limit knobs: min | med | max
 # Profile definitions live in [profiles.*] sections below.
-profile = "max"
+profile = "med"
 #
 # Model selection — each has different strengths:
 #   gpt-5-mini      — Fast, cheap, supports reasoning-effort. Best for CI and iteration.
@@ -94,7 +94,7 @@ review-issues-cap = 2                  # max issues reviewed per batch (conserva
 min-resolved-issues = 1                # mission-complete: minimum closed-as-RESOLVED issues
 min-cumulative-transforms = 1          # mission-complete: minimum transform cycles
 max-source-todos = 2                   # mission-complete: max TODO comments in src
-acceptance-criteria-threshold = 35     # mission-complete: % acceptance criteria required
+acceptance-criteria-threshold = 60     # mission-complete: % acceptance criteria required
 
 [profiles.med]
 # Balanced — good results, middle ground.
@@ -173,19 +173,18 @@ screenshot-file = "SCREENSHOT_INDEX.png"
 
 [acceptance-criteria]
 # Auto-generated from MISSION.md on init. Updated by implementation-review.
-total = 8
-1 = { text = "Compiling markdown returns an HTML string", met = false }
-2 = { text = "Tokenizing markdown returns an array of token objects for inspection", met = false }
-3 = { text = "Handles all 10 feature areas listed above", met = false }
-4 = { text = "Nested constructs work: bold inside links, links inside lists, code inside blockquotes", met = false }
-5 = { text = "Compiling `<script>alert('xss')</script>` produces `&lt;script&gt;` (XSS-safe)", met = false }
-6 = { text = "A sample document is compiled and saved to `docs/examples/sample.html`", met = false }
-7 = { text = "Output is well-formed HTML (every opening tag has a matching closing tag)", met = false }
-8 = { text = "All unit tests pass", met = false }
+total = 7
+1 = { text = "Hamming distance between `\"karolin\"` and `\"kathrin\"` is `3`", met = false }
+2 = { text = "Hamming distance between `\"\"` and `\"\"` is `0`", met = false }
+3 = { text = "Hamming distance between strings of different lengths throws `RangeError`", met = false }
+4 = { text = "Bit-level Hamming distance between `1` and `4` is `2` (binary: 001 vs 100)", met = false }
+5 = { text = "Bit-level Hamming distance between `0` and `0` is `0`", met = false }
+6 = { text = "All unit tests pass", met = false }
+7 = { text = "README documents usage with examples", met = false }
 
 [init]
-timestamp = "2026-03-21T20:18:40.474Z"
+timestamp = "2026-03-21T20:23:10.173Z"
 mode = "purge"
-mission = "2-kyu-create-markdown-compiler"
-mission-type = "random"
+mission = "6-kyu-understand-hamming-distance"
+mission-type = "6-kyu-understand-hamming-distance"
 version = "7.4.46"

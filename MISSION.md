@@ -1,48 +1,26 @@
 # Mission
 
-Build a Markdown-to-HTML compiler library that converts GitHub Flavored Markdown (GFM) to semantic HTML.
+A JavaScript library for computing Hamming distances — between equal-length strings (character positions that differ) and between non-negative integers (differing bits).
 
 ## Required Capabilities
 
-The library must parse and render these 10 GFM feature areas:
-
-1. Headings (h1-h6 via `#` markers) and paragraphs
-2. Inline formatting: bold (`**`), italic (`*`), code (`` ` ``), strikethrough (`~~`)
-3. Links `[text](url)` and images `![alt](src)`
-4. Ordered and unordered lists (including nested lists)
-5. Code blocks (fenced with ``` and language annotation)
-6. Blockquotes (nested `>`)
-7. Tables (GFM pipe syntax with alignment)
-8. Horizontal rules (`---`, `***`, `___`)
-9. Task lists (`- [ ]`, `- [x]`)
-10. Auto-linked URLs and HTML entity escaping
-
-It must also provide a tokenization/inspection mode for testing intermediate representations.
-
-## Technical Requirements
-
-- Pure JavaScript, no external Markdown parsing libraries
-- XSS-safe: all user content must be HTML-escaped before insertion. Specifically, compiling `<script>alert('xss')</script>` must produce escaped output with `&lt;script&gt;`, never executable script tags.
-- Well-formed HTML output: every opening tag must have a matching closing tag. Self-closing tags (`<br/>`, `<img/>`) use XHTML syntax.
-- Exported as both CommonJS and ESM
-
-## Suggested Approach
-
-A two-pass architecture (tokeniser/lexer pass, then renderer pass) works well for this problem, but any architecture that passes the acceptance criteria is acceptable.
+- Compute the Hamming distance between two strings of equal length.
+- Compute the Hamming distance between two non-negative integers by counting differing bits.
+- Handle Unicode strings correctly (compare code points, not UTF-16 code units).
+- Validate inputs: throw `TypeError` for non-string/non-integer arguments, `RangeError` for unequal-length strings or negative integers.
 
 ## Requirements
 
 - Export all public API as named exports from `src/lib/main.js`.
-- Comprehensive test suite covering: 1 test per feature area (10 minimum), nesting combinations (bold in links, links in lists, code in blockquotes — 5 minimum), edge cases (empty input, single character, whitespace only, deeply nested lists — 5 minimum).
-- README with usage examples.
+- Comprehensive unit tests covering normal cases, edge cases (empty strings, zero, large integers), and error cases.
+- README with usage examples and API documentation.
 
 ## Acceptance Criteria
 
-- [ ] Compiling markdown returns an HTML string
-- [ ] Tokenizing markdown returns an array of token objects for inspection
-- [ ] Handles all 10 feature areas listed above
-- [ ] Nested constructs work: bold inside links, links inside lists, code inside blockquotes
-- [ ] Compiling `<script>alert('xss')</script>` produces `&lt;script&gt;` (XSS-safe)
-- [ ] A sample document is compiled and saved to `docs/examples/sample.html`
-- [ ] Output is well-formed HTML (every opening tag has a matching closing tag)
+- [ ] Hamming distance between `"karolin"` and `"kathrin"` is `3`
+- [ ] Hamming distance between `""` and `""` is `0`
+- [ ] Hamming distance between strings of different lengths throws `RangeError`
+- [ ] Bit-level Hamming distance between `1` and `4` is `2` (binary: 001 vs 100)
+- [ ] Bit-level Hamming distance between `0` and `0` is `0`
 - [ ] All unit tests pass
+- [ ] README documents usage with examples
