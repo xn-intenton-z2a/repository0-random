@@ -2,35 +2,31 @@
 
 Summary
 
-Implement bit-level Hamming distance between two non-negative integers by counting differing bits.
+Bit-level Hamming distance between two non-negative integers by counting differing bits.
 
 Specification
 
-- Provide a named export function hammingDistanceBits(a, b) in src/lib/main.js.
-- Acceptable input types are integer Number values and BigInt. Non-integer or other types must cause TypeError.
+- Provide a named export function hammingBits(a, b) in src/lib/main.js.
+- Acceptable input types are integer Number values (Number.isInteger must be true). Non-number types or non-integer numbers must cause TypeError.
 - Negative integers must cause RangeError.
-- Convert both inputs to BigInt internally, compute the bitwise XOR, and count set bits in the result to determine the Hamming distance.
-- The function must handle values larger than Number.MAX_SAFE_INTEGER by using BigInt, and must return a JavaScript Number for the count.
+- Implementation may use BigInt internally for the XOR and bit-counting to avoid precision issues when manipulating bits.
+- The function returns a JavaScript Number representing the count of differing bits.
 
 API
 
-- Named export: hammingDistanceBits
-- Signature: hammingDistanceBits(a, b) -> number
-- Behavior: supports Number integers and BigInt, performs validation and returns the count of differing bits.
+- Named export: hammingBits
+- Signature: hammingBits(a, b) -> number
+- Behavior: accepts two non-negative integer Number values, validates input, computes XOR using BigInt internally, and returns the number of set bits in the XOR result.
 
 Acceptance Criteria
 
 - Bit-level Hamming distance between 1 and 4 is 2.
 - Bit-level Hamming distance between 0 and 0 is 0.
-- Calling hammingDistanceBits with a negative integer must throw RangeError.
-- Calling hammingDistanceBits with a non-integer Number or non-integer type must throw TypeError.
-- hammingDistanceBits supports very large integers via BigInt; include a unit test for large values beyond 2**53.
+- Calling hammingBits with a negative integer throws RangeError.
+- Calling hammingBits with a non-integer Number or non-number type throws TypeError.
+- Implementation uses BigInt internally for safe bitwise operations; unit tests include a large-integer case (e.g., 2**40 + 3 vs 3) to validate behaviour.
 
 Implementation Notes
 
-- Convert inputs to BigInt after validation: let x = BigInt(a); let y = BigInt(b); let z = x ^ y; then count one bits using a loop shifting z right until zero.
-- Ensure the returned count is a safe Number (counts of differing bits will fit in JS Number for realistic inputs).
-
-Tests
-
-- Add unit tests for small integers, zero, negative validation, non-integer validation, and very large BigInt inputs.
+- Validate inputs with Number.isInteger before converting to BigInt: let x = BigInt(a); let y = BigInt(b); compute z = x ^ y; count set bits by shifting until zero.
+- Do not claim direct BigInt input support unless the implementation and tests explicitly accept BigInt values.
