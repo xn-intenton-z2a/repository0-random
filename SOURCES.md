@@ -17,3 +17,6 @@ Reference material and documentation sources for this project.
 - https://github.com/kiorky/croniter
 
 The maintain-library workflow will process these into `library/` documents.
+
+- node-cron: https://www.npmjs.com/package/node-cron
+- cron: https://www.npmjs.com/package/cron
