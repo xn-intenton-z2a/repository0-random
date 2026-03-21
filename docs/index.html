@@ -1,20 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>repository0</title>
-  <meta property="og:title" content="repository0">
-  <meta property="og:description" content="An autonomous repository powered by agentic-lib">
-  <meta property="og:type" content="website">
+  <meta property="og:title" content="repository0" />
+  <meta property="og:description" content="An autonomous repository powered by agentic-lib" />
+  <meta property="og:type" content="website" />
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 1000px; margin: 0 auto; padding: 2rem; color: #333; }
     h1 { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
     a { color: #0366d6; }
     .identity { background: #f6f8fa; padding: 1rem; border-radius: 6px; margin: 1rem 0; font-family: monospace; }
     .identity dt { font-weight: bold; color: #666; }
     .identity dd { margin: 0 0 0.5rem 0; font-size: 1.1rem; }
     #demo-output { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 6px; font-family: monospace; white-space: pre-wrap; min-height: 2rem; }
+    .features { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+    .feature { border: 1px solid #eee; padding: 1rem; border-radius: 6px; background: #fff; }
+    .feature h3 { margin-top: 0; }
+    .todo { color: #888; font-style: italic; }
   </style>
 </head>
 <body>
@@ -27,17 +31,77 @@
       <dd id="lib-description">loading...</dd>
     </dl>
   </div>
-  <h2>Output</h2>
+
+  <h2>Demo Output</h2>
   <div id="demo-output">Loading library...</div>
+
+  <h2>Mission Features</h2>
+  <p>This page demonstrates the major features from MISSION.md. Each panel contains a short description and a placeholder output (TODO) until the engine is fully implemented.</p>
+
+  <div class="features">
+    <div class="feature" id="feature-parse">
+      <h3>Parser</h3>
+      <p>Parse cron expressions into a structured object (ranges, lists, steps, wildcards).</p>
+      <pre id="parse-output" class="todo">TODO: parser demo</pre>
+    </div>
+
+    <div class="feature" id="feature-next">
+      <h3>Next Run</h3>
+      <p>Compute the next run time after a given date (UTC).</p>
+      <pre id="next-run-output" class="todo">TODO: next run demo</pre>
+    </div>
+
+    <div class="feature" id="feature-next-n">
+      <h3>Next N Runs</h3>
+      <p>Compute the next N run times after a given date.</p>
+      <pre id="next-n-output" class="todo">TODO: next N runs demo</pre>
+    </div>
+
+    <div class="feature" id="feature-match">
+      <h3>Match Check</h3>
+      <p>Check whether a specific date matches a cron expression.</p>
+      <pre id="match-output" class="todo">TODO: match demo</pre>
+    </div>
+
+    <div class="feature" id="feature-stringify">
+      <h3>Stringify</h3>
+      <p>Convert a parsed cron object back to a cron string.</p>
+      <pre id="stringify-output" class="todo">TODO: stringify demo</pre>
+    </div>
+
+    <div class="feature" id="feature-shortcuts">
+      <h3>Shortcuts</h3>
+      <p>Support for @yearly, @monthly, @weekly, @daily, and @hourly.</p>
+      <pre id="shortcuts-output" class="todo">TODO: shortcuts demo</pre>
+    </div>
+  </div>
+
   <h2>About</h2>
   <p>This website uses the library. See <a href="https://github.com/xn-intenton-z2a/repository0">the repository</a> for source code and mission details.</p>
+
   <script type="module">
     try {
-      const { name, version, description } = await import('./lib.js');
+      // Import identity from the browser entry point (re-exports from lib)
+      const lib = await import('./lib.js');
+      const name = lib.name || document.title;
+      const version = lib.version || '(unknown)';
+      const description = lib.description || '(no description)';
+
       document.getElementById('lib-name').textContent = name;
       document.getElementById('lib-version').textContent = version;
-      document.getElementById('lib-description').textContent = description || '(no description)';
+      document.getElementById('lib-description').textContent = description;
+
+      // Demo output remains a lightweight identity snapshot while features are implemented.
       document.getElementById('demo-output').textContent = JSON.stringify({ name, version, description }, null, 2);
+
+      // Leave feature panels as TODOs until implementation is ready.
+      document.getElementById('parse-output').textContent = 'TODO: parser demo — implement parseCron(expression) in src/lib/main.js';
+      document.getElementById('next-run-output').textContent = 'TODO: next run demo — implement nextRun(expression, fromDate?) in src/lib/main.js';
+      document.getElementById('next-n-output').textContent = 'TODO: next N runs demo — implement nextRuns(expression, n, fromDate?) in src/lib/main.js';
+      document.getElementById('match-output').textContent = 'TODO: match demo — implement matches(expression, date) in src/lib/main.js';
+      document.getElementById('stringify-output').textContent = 'TODO: stringify demo — implement stringifyCron(parsed) in src/lib/main.js';
+      document.getElementById('shortcuts-output').textContent = 'TODO: shortcuts demo — implement shortcut parsing (@daily etc.) in src/lib/main.js';
+
       document.title = name + ' v' + version;
     } catch (e) {
       document.getElementById('lib-version').textContent = '(error)';
