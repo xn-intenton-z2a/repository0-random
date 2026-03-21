@@ -29,5 +29,5 @@ A JavaScript library that parses cron expressions, computes next run times, and 
 - [x] Next 7 runs for `"@daily"` returns 7 consecutive daily dates
 - [x] Next 3 runs for `"0 0 31 * *"` starting from `2025-01-01` returns dates in Jan, Mar, May (skips months without 31 days)
 - [x] Invalid expressions throw descriptive errors
-- [ ] All unit tests pass
-- [ ] README documents usage with examples
+- [x] All unit tests pass
+- [x] README documents usage with examples
