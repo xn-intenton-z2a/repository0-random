@@ -18,4 +18,9 @@ Reference material and documentation sources for this project.
 - https://github.com/kiorky/croniter
 - https://www.npmjs.com/package/cron
 
+# Additional references added for implementation details (UTC, parsing, date formats)
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date
+- https://tc39.es/ecma262/#sec-date-objects
+- https://en.wikipedia.org/wiki/ISO_8601
+
 The maintain-library workflow will process these into `library/` documents.
