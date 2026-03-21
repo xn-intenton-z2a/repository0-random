@@ -65,4 +65,35 @@ gh repo create my-project --template xn-intenton-z2a/repository0 --public --clon
 cd my-project
 ```
 
+## Testing
+
+This project includes unit and behaviour tests that validate the cron engine and the website demo.
+
+- Run unit tests: `npm test` (this executes vitest against `tests/unit/*.test.js`).
+- Run the behaviour (Playwright) tests: `npm run test:behaviour` (requires Playwright browsers installed).
+
+New tests added in this change:
+
+- `tests/unit/dedicated.cron.test.js` — a dedicated unit test file that exercises parseCron, matches, nextRun, nextRuns, stringifyCron, shortcuts, and edge cases (month-end day 31, leap-year Feb 29, and 6-field seconds semantics).
+- `tests/behaviour/homepage.test.js` — the Playwright behaviour test now includes explicit assertions that the demo outputs on the website match the library outputs for the following elements:
+  - `#parse-output` (parser minutes for `*/15 * * * *`)
+  - `#next-run-output` (next run for `0 9 * * 1` from 2026-03-21)
+  - `#next-n-output` (next 3 runs for `0 0 31 * *` from 2025-01-01)
+  - `#match-output` (match check for `0 0 25 12 *` on 2025-12-25)
+  - `#stringify-output` (stringify of `@monthly`)
+  - `#shortcuts-output` (next 3 runs for `@daily` from 2026-01-01)
+  - `#seconds-output` (6-field parse for `5 */15 * * * *` showing seconds and minutes)
+
+These assertions ensure the website demo is verified end-to-end by the behaviour tests and that CI will catch regressions in the public demo.
+
+To run both test suites locally:
+
+```bash
+npm ci
+npm test
+npm run test:behaviour
+```
+
+(If you run Playwright tests for the first time you may need to run `npx playwright install` to install browser binaries.)
+
 ... (rest unchanged)
