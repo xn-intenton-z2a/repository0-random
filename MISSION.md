@@ -1,33 +1,48 @@
 # Mission
 
-A JavaScript library that parses cron expressions, computes next run times, and checks schedule matches.
+Build a Markdown-to-HTML compiler library that converts GitHub Flavored Markdown (GFM) to semantic HTML.
 
 ## Required Capabilities
 
-- Parse a cron expression (standard 5-field, or 6-field with seconds) into a structured object. Support ranges (`1-5`), lists (`1,3,5`), steps (`*/15`), and wildcards (`*`).
-- Compute the next run time after a given date (default: now).
-- Compute the next N run times after a given date.
-- Check whether a specific date matches a cron expression.
-- Convert a parsed cron object back to a cron string.
-- Support shortcuts: `@yearly` (`0 0 1 1 *`), `@monthly` (`0 0 1 * *`), `@weekly` (`0 0 * * 0`), `@daily` (`0 0 * * *`), `@hourly` (`0 * * * *`).
+The library must parse and render these 10 GFM feature areas:
+
+1. Headings (h1-h6 via `#` markers) and paragraphs
+2. Inline formatting: bold (`**`), italic (`*`), code (`` ` ``), strikethrough (`~~`)
+3. Links `[text](url)` and images `![alt](src)`
+4. Ordered and unordered lists (including nested lists)
+5. Code blocks (fenced with ``` and language annotation)
+6. Blockquotes (nested `>`)
+7. Tables (GFM pipe syntax with alignment)
+8. Horizontal rules (`---`, `***`, `___`)
+9. Task lists (`- [ ]`, `- [x]`)
+10. Auto-linked URLs and HTML entity escaping
+
+It must also provide a tokenization/inspection mode for testing intermediate representations.
+
+## Technical Requirements
+
+- Pure JavaScript, no external Markdown parsing libraries
+- XSS-safe: all user content must be HTML-escaped before insertion. Specifically, compiling `<script>alert('xss')</script>` must produce escaped output with `&lt;script&gt;`, never executable script tags.
+- Well-formed HTML output: every opening tag must have a matching closing tag. Self-closing tags (`<br/>`, `<img/>`) use XHTML syntax.
+- Exported as both CommonJS and ESM
+
+## Suggested Approach
+
+A two-pass architecture (tokeniser/lexer pass, then renderer pass) works well for this problem, but any architecture that passes the acceptance criteria is acceptable.
 
 ## Requirements
 
-- Handle edge cases: month-end boundaries (e.g. `0 0 31 * *` fires only in months with 31 days — skip months with fewer days, do not fire on the last day as a fallback), leap years (Feb 29 fires only in leap years).
-- All times are UTC. Timezone support is out of scope.
-- Validate expressions: throw on invalid syntax with a descriptive error message.
-- No external runtime dependencies.
 - Export all public API as named exports from `src/lib/main.js`.
-- Comprehensive unit tests covering field combinations, special strings, edge cases, and invalid input.
+- Comprehensive test suite covering: 1 test per feature area (10 minimum), nesting combinations (bold in links, links in lists, code in blockquotes — 5 minimum), edge cases (empty input, single character, whitespace only, deeply nested lists — 5 minimum).
 - README with usage examples.
 
 ## Acceptance Criteria
 
-- [x] Parsing `"*/15 * * * *"` returns a valid structured object
-- [x] Next run for `"0 9 * * 1"` returns the next Monday at 09:00 UTC
-- [x] Matching `"0 0 25 12 *"` against `2025-12-25T00:00:00Z` returns `true`
-- [x] Next 7 runs for `"@daily"` returns 7 consecutive daily dates
-- [x] Next 3 runs for `"0 0 31 * *"` starting from `2025-01-01` returns dates in Jan, Mar, May (skips months without 31 days)
-- [x] Invalid expressions throw descriptive errors
-- [x] All unit tests pass
-- [x] README documents usage with examples
+- [ ] Compiling markdown returns an HTML string
+- [ ] Tokenizing markdown returns an array of token objects for inspection
+- [ ] Handles all 10 feature areas listed above
+- [ ] Nested constructs work: bold inside links, links inside lists, code inside blockquotes
+- [ ] Compiling `<script>alert('xss')</script>` produces `&lt;script&gt;` (XSS-safe)
+- [ ] A sample document is compiled and saved to `docs/examples/sample.html`
+- [ ] Output is well-formed HTML (every opening tag has a matching closing tag)
+- [ ] All unit tests pass

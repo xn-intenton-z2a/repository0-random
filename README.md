@@ -1,58 +1,6 @@
 # repo
 
-This repository is powered by [intentiön agentic-lib](https://github.com/xn-intenton-z2a/agentic-lib) — autonomous code transformation driven by GitHub Copilot. Write a mission, and the system generates issues, writes code, runs tests, and opens pull requests.
-
-## Cron engine usage (UTC-only)
-
-This project includes a small UTC-only cron engine exported from `src/lib/main.js`.
-
-Examples (Node ESM):
-
-```js
-import { parseCron, nextRun, nextRuns, matches, stringifyCron } from './src/lib/main.js';
-
-// parse (5-field) - minutes every 15
-const parsed = parseCron('*/15 * * * *');
-console.log(parsed.minutes); // [0,15,30,45]
-console.log(parsed.seconds); // [0]
-
-// parse (6-field) - seconds included as first field
-const parsed6 = parseCron('5 */15 * * * *');
-console.log(parsed6.seconds); // [5]
-console.log(parsed6.minutes); // [0,15,30,45]
-
-// parse (6-field, seconds-first)
-const parsed6 = parseCron('0 */15 * * * *');
-console.log(parsed6.seconds); // [0]
-console.log(parsed6.minutes); // [0,15,30,45]
-
-// next run after given UTC date (exclusive)
-const from = new Date('2026-03-21T00:00:00Z');
-const next = nextRun('0 9 * * 1', from); // 5-field
-console.log(next.toISOString()); // next Monday at 09:00:00Z
-
-// 6-field next run example (seconds)
-const nextSec = nextRun('5 0 9 * * *', new Date('2026-03-21T09:00:04Z'));
-console.log(nextSec.toISOString()); // '2026-03-21T09:00:05.000Z'
-
-// next run with seconds (6-field)
-const nextSec = nextRun('5 * * * * *', new Date('2026-03-21T00:00:00Z'));
-console.log(nextSec.toISOString()); // '2026-03-21T00:00:05.000Z'
-
-// next N runs
-const week = nextRuns('@daily', 7, new Date('2026-01-01T00:00:00Z'));
-console.log(week.map(d => d.toISOString()));
-
-// matches exact instant (seconds and ms must match schedule)
-console.log(matches('0 0 25 12 *', new Date('2025-12-25T00:00:00Z'))); // true
-console.log(matches('5 0 9 * * *', new Date('2026-03-21T09:00:05Z'))); // true
-
-// stringify canonical
-console.log(stringifyCron(parseCron('@monthly'))); // '0 0 1 * *'
-console.log(stringifyCron(parseCron('5 */15 * * * *'))); // '5 */15 * * * *'
-```
-
-All functions operate in UTC and expect dates with an explicit Z suffix where applicable. For 6-field cron expressions the first field is seconds (0-59), followed by minute, hour, day-of-month, month, day-of-week.
+This repository is powered by [intenti&ouml;n agentic-lib](https://github.com/xn-intenton-z2a/agentic-lib) — autonomous code transformation driven by GitHub Copilot. Write a mission, and the system generates issues, writes code, runs tests, and opens pull requests.
 
 ## Getting Started
 
@@ -65,35 +13,141 @@ gh repo create my-project --template xn-intenton-z2a/repository0 --public --clon
 cd my-project
 ```
 
-## Testing
+### Step 2: Initialise with a Mission
 
-This project includes unit and behaviour tests that validate the cron engine and the website demo.
-
-- Run unit tests: `npm test` (this executes vitest against `tests/unit/*.test.js`).
-- Run the behaviour (Playwright) tests: `npm run test:behaviour` (requires Playwright browsers installed).
-
-New tests added in this change:
-
-- `tests/unit/dedicated.cron.test.js` — a dedicated unit test file that exercises parseCron, matches, nextRun, nextRuns, stringifyCron, shortcuts, and edge cases (month-end day 31, leap-year Feb 29, and 6-field seconds semantics).
-- `tests/behaviour/homepage.test.js` — the Playwright behaviour test now includes explicit assertions that the demo outputs on the website match the library outputs for the following elements:
-  - `#parse-output` (parser minutes for `*/15 * * * *`)
-  - `#next-run-output` (next run for `0 9 * * 1` from 2026-03-21)
-  - `#next-n-output` (next 3 runs for `0 0 31 * *` from 2025-01-01)
-  - `#match-output` (match check for `0 0 25 12 *` on 2025-12-25)
-  - `#stringify-output` (stringify of `@monthly`)
-  - `#shortcuts-output` (next 3 runs for `@daily` from 2026-01-01)
-  - `#seconds-output` (6-field parse for `5 */15 * * * *` showing seconds and minutes)
-
-These assertions ensure the website demo is verified end-to-end by the behaviour tests and that CI will catch regressions in the public demo.
-
-To run both test suites locally:
+Run the init workflow from the GitHub Actions tab (**agentic-lib-init** with mode=purge), or use the CLI:
 
 ```bash
-npm ci
-npm test
-npm run test:behaviour
+npx @xn-intenton-z2a/agentic-lib init --purge --mission 7-kyu-understand-fizz-buzz
 ```
 
-(If you run Playwright tests for the first time you may need to run `npx playwright install` to install browser binaries.)
+This resets the repository to a clean state with your chosen mission in `MISSION.md`. The default mission is **fizz-buzz** (7-kyu).
 
-... (rest unchanged)
+#### Built-in Missions
+
+agentic-lib ships with 20 built-in missions plus two special modes, graded using [Codewars kyu/dan](https://docs.codewars.com/concepts/kata/) difficulty:
+
+| Mission | Kyu/Dan | Description |
+|---------|---------|-------------|
+| `random` | — | Randomly select from all built-in missions |
+| `generate` | — | Ask the LLM to generate a novel mission |
+| `8-kyu-remember-empty` | 8 kyu | Blank template |
+| `8-kyu-remember-hello-world` | 8 kyu | Hello World |
+| `7-kyu-understand-fizz-buzz` | 7 kyu | Classic FizzBuzz (default) |
+| `6-kyu-understand-hamming-distance` | 6 kyu | Hamming distance (strings + bits) |
+| `6-kyu-understand-roman-numerals` | 6 kyu | Roman numeral conversion |
+| `5-kyu-apply-ascii-face` | 5 kyu | ASCII face art |
+| `5-kyu-apply-string-utils` | 5 kyu | 10 string utility functions |
+| `4-kyu-apply-cron-engine` | 4 kyu | Cron expression parser |
+| `4-kyu-apply-dense-encoding` | 4 kyu | Dense binary encoding |
+| `4-kyu-analyze-json-schema-diff` | 4 kyu | JSON Schema diff |
+| `4-kyu-apply-owl-ontology` | 4 kyu | OWL ontology processor |
+| `3-kyu-analyze-lunar-lander` | 3 kyu | Lunar lander simulation |
+| `3-kyu-evaluate-time-series-lab` | 3 kyu | Time series analysis |
+| `2-kyu-create-markdown-compiler` | 2 kyu | Markdown compiler |
+| `2-kyu-create-plot-code-lib` | 2 kyu | Code visualization library |
+| `1-kyu-create-ray-tracer` | 1 kyu | Ray tracer |
+| `1-dan-create-c64-emulator` | 1 dan | C64 emulator |
+| `1-dan-create-planning-engine` | 1 dan | Planning engine |
+| `2-dan-create-self-hosted` | 2 dan | Self-hosted AGI vision |
+
+List all available missions:
+
+```bash
+npx @xn-intenton-z2a/agentic-lib iterate --list-missions
+```
+
+#### Write Your Own Mission
+
+Edit `MISSION.md` directly — describe what you want to build, the features, requirements, and acceptance criteria as checkboxes:
+
+```markdown
+# Mission
+
+Build a CLI tool that converts CSV files to formatted Markdown tables.
+
+## Features
+- Read CSV from file or stdin
+- Auto-detect delimiter
+
+## Acceptance Criteria
+- [ ] Reading a CSV with 3 columns produces a 3-column Markdown table
+- [ ] All unit tests pass
+```
+
+### Step 3: Enable GitHub Copilot and Configure Secrets
+
+Add these secrets in **Settings > Secrets and variables > Actions**:
+
+| Secret | How to create | Purpose |
+|--------|---------------|---------|
+| `COPILOT_GITHUB_TOKEN` | [Fine-grained PAT](https://github.com/settings/tokens?type=beta) with **GitHub Copilot** > Read | Authenticates with the Copilot SDK |
+| `WORKFLOW_TOKEN` | [Classic PAT](https://github.com/settings/tokens) with **workflow** scope | Allows init to update workflow files |
+
+Then in **Settings > Actions > General**:
+- Workflow permissions: **Read and write permissions**
+- Allow GitHub Actions to create PRs: **Checked**
+
+### Step 4: Activate the Schedule
+
+Workflows ship with schedule **off** by default. Activate them from the GitHub Actions tab by running **agentic-lib-schedule** with your desired frequency:
+
+| Frequency | Workflow runs | Init runs | Test runs |
+|-----------|--------------|-----------|-----------|
+| continuous | Every 20 min | Every 4 hours | Every hour |
+| hourly | Every hour | Every day | Every 4 hours |
+| daily | Every day | Every week | Every day |
+| weekly | Every week | Every month | Every week |
+| off | Never | Never | Never |
+
+## How It Works
+
+```
+MISSION.md -> [supervisor] -> dispatch workflows -> Issue -> Code -> Test -> PR -> Merge
+                                                     ^                           |
+                                                     +---------------------------+
+```
+
+The pipeline runs as GitHub Actions workflows. An LLM supervisor gathers repository context and dispatches other workflows. Each workflow uses the Copilot SDK to make targeted changes.
+
+## Configuration
+
+Edit `agentic-lib.toml` to tune the system:
+
+```toml
+[schedule]
+supervisor = "off"          # off | weekly | daily | hourly | continuous
+focus = "mission"           # mission | maintenance
+
+[tuning]
+profile = "max"             # min | med | max
+model = "gpt-5-mini"       # gpt-5-mini | claude-sonnet-4 | gpt-4.1
+
+[mission-complete]
+acceptance-criteria-threshold = 50   # % of criteria that must be met
+min-resolved-issues = 1              # minimum closed issues
+```
+
+## File Layout
+
+```
+src/lib/main.js              <- library (browser-safe)
+src/web/index.html            <- web page (imports ./lib.js)
+tests/unit/main.test.js       <- unit tests
+tests/behaviour/              <- Playwright E2E
+docs/                         <- build output for GitHub Pages
+```
+
+## Updating
+
+The `init` workflow updates the agentic infrastructure automatically. To update manually:
+
+```bash
+npx @xn-intenton-z2a/agentic-lib@latest init --purge
+```
+
+## Links
+
+- [MISSION.md](MISSION.md) — your project goals
+- [agentic-lib documentation](https://github.com/xn-intenton-z2a/agentic-lib) — full SDK docs
+- [intenti&ouml;n website](https://xn--intenton-z2a.com)
