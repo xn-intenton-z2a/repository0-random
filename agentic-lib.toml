@@ -39,7 +39,7 @@ test = "npm ci && npm test"
 [tuning]
 # Profile sets defaults for all tuning and limit knobs: min | med | max
 # Profile definitions live in [profiles.*] sections below.
-profile = "med"
+profile = "max"
 #
 # Model selection — each has different strengths:
 #   gpt-5-mini      — Fast, cheap, supports reasoning-effort. Best for CI and iteration.
@@ -93,7 +93,7 @@ review-issues-cap = 2                  # max issues reviewed per batch (conserva
 min-resolved-issues = 1                # mission-complete: minimum closed-as-RESOLVED issues
 min-cumulative-transforms = 1          # mission-complete: minimum transform cycles
 max-source-todos = 1                   # mission-complete: max TODO comments in src
-acceptance-criteria-threshold = 60     # mission-complete: % acceptance criteria required
+acceptance-criteria-threshold = 40     # mission-complete: % acceptance criteria required
 
 [profiles.med]
 reasoning-effort = "high"            # low | medium | high | none
@@ -170,18 +170,20 @@ screenshot-file = "SCREENSHOT_INDEX.png"
 
 [acceptance-criteria]
 # Auto-generated from MISSION.md on init. Updated by implementation-review.
-total = 7
-1 = { text = "Hamming distance between `\"karolin\"` and `\"kathrin\"` is `3`", met = false }
-2 = { text = "Hamming distance between `\"\"` and `\"\"` is `0`", met = false }
-3 = { text = "Hamming distance between strings of different lengths throws `RangeError`", met = false }
-4 = { text = "Bit-level Hamming distance between `1` and `4` is `2` (binary: 001 vs 100)", met = false }
-5 = { text = "Bit-level Hamming distance between `0` and `0` is `0`", met = false }
-6 = { text = "All unit tests pass", met = false }
-7 = { text = "README documents usage with examples", met = false }
+total = 9
+1 = { text = "Generating a sine wave with 2 periods, 0 noise, 100 samples produces 200 data points tracing a clean sine wave", met = false }
+2 = { text = "Generating a random walk with seed 42 produces identical output on repeated calls (deterministic)", met = false }
+3 = { text = "Normalising fills gaps with linearly interpolated values", met = false }
+4 = { text = "Moving average forecast with window 10, horizon 20 returns 20 predicted values", met = false }
+5 = { text = "Forecast of a known sine wave has RMSE < 0.5 for a 10-point horizon", met = false }
+6 = { text = "Cross-correlation of two offset sine waves shows peak correlation at the correct lag", met = false }
+7 = { text = "Report produces a markdown string with dataset summaries", met = false }
+8 = { text = "All unit tests pass", met = false }
+9 = { text = "README documents the API with examples", met = false }
 
 [init]
-timestamp = "2026-03-21T22:28:05.985Z"
+timestamp = "2026-03-21T23:18:17.308Z"
 mode = "purge"
-mission = "6-kyu-understand-hamming-distance"
-mission-type = "6-kyu-understand-hamming-distance"
-version = "7.4.50"
+mission = "3-kyu-evaluate-time-series-lab"
+mission-type = "random"
+version = "7.4.51"

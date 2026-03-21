@@ -26,11 +26,9 @@ describe("Website", () => {
     expect(lib).toContain("../lib/main.js");
   });
 
-  test("index.html displays library identity elements and hamming demo ids", () => {
+  test("index.html displays library identity elements", () => {
     const html = readFileSync("src/web/index.html", "utf8");
     expect(html).toContain("lib-name");
     expect(html).toContain("lib-version");
-    expect(html).toContain("hamming-string");
-    expect(html).toContain("hamming-bits");
   });
 });
