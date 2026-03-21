@@ -26,9 +26,16 @@ describe("Website", () => {
     expect(lib).toContain("../lib/main.js");
   });
 
-  test("index.html displays library identity elements", () => {
+  test("index.html displays library identity elements and demo IDs", () => {
     const html = readFileSync("src/web/index.html", "utf8");
     expect(html).toContain("lib-name");
     expect(html).toContain("lib-version");
+    expect(html).toContain('id="parse-output"');
+    expect(html).toContain('id="next-run-output"');
+    expect(html).toContain('id="next-n-output"');
+    expect(html).toContain('id="match-output"');
+    expect(html).toContain('id="stringify-output"');
+    expect(html).toContain('id="shortcuts-output"');
+    expect(html).toContain('id="seconds-output"');
   });
 });
