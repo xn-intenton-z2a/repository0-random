@@ -27,45 +27,6 @@ export function getIdentity() {
   return { name, version, description };
 }
 
-// Hamming distance for strings (code point aware)
-export function hammingString(a, b) {
-  if (typeof a !== "string" || typeof b !== "string") {
-    throw new TypeError("hammingString expects two string arguments");
-  }
-  const aPoints = Array.from(a);
-  const bPoints = Array.from(b);
-  if (aPoints.length !== bPoints.length) {
-    throw new RangeError("Strings must have the same length (in code points)");
-  }
-  let dist = 0;
-  for (let i = 0; i < aPoints.length; i++) {
-    if (aPoints[i] !== bPoints[i]) dist++;
-  }
-  return dist;
-}
-
-// Hamming distance for non-negative integers (bitwise)
-export function hammingBits(x, y) {
-  const isNumber = (v) => typeof v === "number" && Number.isFinite(v) && Number.isInteger(v);
-  const isBigInt = (v) => typeof v === "bigint";
-  if (!(isNumber(x) || isBigInt(x)) || !(isNumber(y) || isBigInt(y))) {
-    throw new TypeError("hammingBits expects integer or bigint arguments");
-  }
-  // normalize to BigInt for safe bitwise operations
-  const bx = isBigInt(x) ? x : BigInt(x);
-  const by = isBigInt(y) ? y : BigInt(y);
-  if (bx < 0n || by < 0n) {
-    throw new RangeError("hammingBits expects non-negative integers");
-  }
-  let z = bx ^ by;
-  let count = 0;
-  while (z) {
-    if (z & 1n) count++;
-    z = z >> 1n;
-  }
-  return count;
-}
-
 export function main(args) {
   if (args?.includes("--version")) {
     console.log(version);

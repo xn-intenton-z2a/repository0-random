@@ -1,6 +1,6 @@
 # repo
 
-This repository is powered by [intentiö n agentic-lib](https://github.com/xn-intenton-z2a/agentic-lib) — autonomous code transformation driven by GitHub Copilot. Write a mission, and the system generates issues, writes code, runs tests, and opens pull requests.
+This repository is powered by [intenti&ouml;n agentic-lib](https://github.com/xn-intenton-z2a/agentic-lib) — autonomous code transformation driven by GitHub Copilot. Write a mission, and the system generates issues, writes code, runs tests, and opens pull requests.
 
 ## Getting Started
 
@@ -23,32 +23,7 @@ npx @xn-intenton-z2a/agentic-lib init --purge --mission 7-kyu-understand-fizz-bu
 
 This resets the repository to a clean state with your chosen mission in `MISSION.md`. The default mission is **fizz-buzz** (7-kyu).
 
-## Hamming Distance API
-
-This project implements Hamming distance utilities for strings and non-negative integers.
-
-- `hammingString(a, b)` — compute Hamming distance between two strings by comparing Unicode code points. Both arguments must be strings of equal length (in code points). Throws TypeError for non-strings and RangeError for unequal lengths.
-- `hammingBits(x, y)` — compute bitwise Hamming distance between two non-negative integers (Number or BigInt). Throws TypeError for non-integer inputs and RangeError for negative integers.
-
-Examples:
-
-```js
-import { hammingString, hammingBits } from './src/lib/main.js';
-
-console.log(hammingString('karolin', 'kathrin'));
-// 3
-
-console.log(hammingString('', ''));
-// 0
-
-console.log(hammingBits(1, 4));
-// 2
-
-console.log(hammingBits(0, 0));
-// 0
-```
-
-## Built-in Missions
+#### Built-in Missions
 
 agentic-lib ships with 20 built-in missions plus two special modes, graded using [Codewars kyu/dan](https://docs.codewars.com/concepts/kata/) difficulty:
 
@@ -66,6 +41,7 @@ agentic-lib ships with 20 built-in missions plus two special modes, graded using
 | `4-kyu-apply-cron-engine` | 4 kyu | Cron expression parser |
 | `4-kyu-apply-dense-encoding` | 4 kyu | Dense binary encoding |
 | `4-kyu-analyze-json-schema-diff` | 4 kyu | JSON Schema diff |
+| `4-kyu-apply-owl-ontology` | 4 kyu | OWL ontology processor |
 | `3-kyu-analyze-lunar-lander` | 3 kyu | Lunar lander simulation |
 | `3-kyu-evaluate-time-series-lab` | 3 kyu | Time series analysis |
 | `2-kyu-create-markdown-compiler` | 2 kyu | Markdown compiler |
@@ -73,6 +49,7 @@ agentic-lib ships with 20 built-in missions plus two special modes, graded using
 | `1-kyu-create-ray-tracer` | 1 kyu | Ray tracer |
 | `1-dan-create-c64-emulator` | 1 dan | C64 emulator |
 | `1-dan-create-planning-engine` | 1 dan | Planning engine |
+| `2-dan-create-self-hosted` | 2 dan | Self-hosted AGI vision |
 
 List all available missions:
 
@@ -121,6 +98,7 @@ Workflows ship with schedule **off** by default. Activate them from the GitHub A
 | hourly | Every hour | Every day | Every 4 hours |
 | daily | Every day | Every week | Every day |
 | weekly | Every week | Every month | Every week |
+| off | Never | Never | Never |
 
 ## How It Works
 
@@ -172,4 +150,4 @@ npx @xn-intenton-z2a/agentic-lib@latest init --purge
 
 - [MISSION.md](MISSION.md) — your project goals
 - [agentic-lib documentation](https://github.com/xn-intenton-z2a/agentic-lib) — full SDK docs
-- [intentiö n website](https://xn--intenton-z2a.com)
+- [intenti&ouml;n website](https://xn--intenton-z2a.com)

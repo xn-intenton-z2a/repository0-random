@@ -20,11 +20,3 @@ test("page displays the library version from src/lib/main.js", async ({ page }) 
   const pageVersion = await page.locator("#lib-version").textContent();
   expect(pageVersion).toContain(version);
 });
-
-test("page shows Hamming demo outputs", async ({ page }) => {
-  await page.goto("./", { waitUntil: "networkidle" });
-  // string example: karolin vs kathrin -> 3
-  await expect(page.locator('#hamming-string-result')).toHaveText('3');
-  // bits example: 1 vs 4 -> 2
-  await expect(page.locator('#hamming-bits-result')).toHaveText('2');
-});
