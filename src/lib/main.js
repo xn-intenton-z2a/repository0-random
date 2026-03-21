@@ -39,6 +39,47 @@ export function main(args) {
   console.log(`${name}@${version}`);
 }
 
+/**
+ * Compute Hamming distance between two strings, measured in Unicode code points.
+ * Throws TypeError if inputs are not strings, RangeError if lengths differ.
+ */
+export function hammingString(a, b) {
+  if (typeof a !== "string" || typeof b !== "string") {
+    throw new TypeError("hammingString expects two strings");
+  }
+  const aPoints = Array.from(a);
+  const bPoints = Array.from(b);
+  if (aPoints.length !== bPoints.length) {
+    throw new RangeError("Strings must have equal length in Unicode code points");
+  }
+  let diff = 0;
+  for (let i = 0; i < aPoints.length; i++) {
+    if (aPoints[i] !== bPoints[i]) diff++;
+  }
+  return diff;
+}
+
+/**
+ * Compute Hamming distance between two non-negative integers by counting differing bits.
+ * Throws TypeError if inputs are not integers, RangeError if negative.
+ */
+export function hammingBits(a, b) {
+  if (!Number.isInteger(a) || !Number.isInteger(b)) {
+    throw new TypeError("hammingBits expects integer arguments");
+  }
+  if (a < 0 || b < 0) {
+    throw new RangeError("hammingBits expects non-negative integers");
+  }
+  // Use BigInt to safely compute XOR for large integers
+  let x = BigInt(a) ^ BigInt(b);
+  let count = 0;
+  while (x) {
+    count += Number(x & 1n);
+    x >>= 1n;
+  }
+  return count;
+}
+
 if (isNode) {
   const { fileURLToPath } = await import("url");
   if (process.argv[1] === fileURLToPath(import.meta.url)) {
