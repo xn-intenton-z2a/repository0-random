@@ -74,6 +74,12 @@
       <p>Support for @yearly, @monthly, @weekly, @daily, and @hourly.</p>
       <pre id="shortcuts-output" class="todo">loading...</pre>
     </div>
+
+    <div class="feature" id="feature-seconds">
+      <h3>Seconds (6-field)</h3>
+      <p>6-field cron expressions include seconds as the first field. Example: '5 */15 * * * *'</p>
+      <pre id="seconds-output" class="todo">loading...</pre>
+    </div>
   </div>
 
   <h2>About</h2>
@@ -139,6 +145,14 @@
         document.getElementById('shortcuts-output').textContent = JSON.stringify(daily.map(d => d.toISOString()), null, 2);
       } catch (e) {
         document.getElementById('shortcuts-output').textContent = 'Error: ' + e.message;
+      }
+
+      // Seconds (6-field) demo
+      try {
+        const p6 = lib.parseCron('5 */15 * * * *');
+        document.getElementById('seconds-output').textContent = JSON.stringify({ seconds: p6.seconds, minutes: p6.minutes }, null, 2);
+      } catch (e) {
+        document.getElementById('seconds-output').textContent = 'Error: ' + e.message;
       }
 
       document.title = name + ' v' + version;

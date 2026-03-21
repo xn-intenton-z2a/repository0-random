@@ -15,4 +15,11 @@ describe("Next Run Calculation", () => {
     const next = nextRun('0 0 29 2 *', new Date('2023-01-01T00:00:00Z'));
     expect(next.toISOString()).toBe('2024-02-29T00:00:00.000Z');
   });
+
+  test("next run respects seconds when provided (6-field)", () => {
+    const from = new Date('2026-03-21T00:00:00Z');
+    const next = nextRun('5 * * * * *', from);
+    expect(next.getUTCSeconds()).toBe(5);
+    expect(next.getTime()).toBeGreaterThan(from.getTime());
+  });
 });
