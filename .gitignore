@@ -24,6 +24,9 @@ Thumbs.db
 /intentïon.md
 /intention.md
 /SCREENSHOT_INDEX.png
+/library/raw
+/tmp_crawls
+/agentic-lib-state.toml
 
 # Generated files at repo root (agents should use examples/ instead)
 /*.svg
