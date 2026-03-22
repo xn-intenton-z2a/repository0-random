@@ -93,7 +93,7 @@ review-issues-cap = 2                  # max issues reviewed per batch (conserva
 min-resolved-issues = 1                # mission-complete: minimum closed-as-RESOLVED issues
 min-cumulative-transforms = 1          # mission-complete: minimum transform cycles
 max-source-todos = 1                   # mission-complete: max TODO comments in src
-acceptance-criteria-threshold = 50     # mission-complete: % acceptance criteria required
+acceptance-criteria-threshold = 60     # mission-complete: % acceptance criteria required
 
 [profiles.med]
 reasoning-effort = "high"            # low | medium | high | none
@@ -171,17 +171,17 @@ screenshot-file = "SCREENSHOT_INDEX.png"
 [acceptance-criteria]
 # Auto-generated from MISSION.md on init. Updated by implementation-review.
 total = 7
-1 = { text = "At least 3 working encodings (base62, base85, one higher)", met = false }
-2 = { text = "Round-trip correct for arbitrary binary data including edge cases", met = false }
-3 = { text = "UUID encoding shorter than base64 (< 22 chars) for the densest encoding", met = false }
-4 = { text = "Listing encodings returns encoding metadata (name, bits/char, charset size)", met = false }
-5 = { text = "Custom encoding can be created from a charset string", met = false }
+1 = { text = "Hamming distance between `\"karolin\"` and `\"kathrin\"` is `3`", met = false }
+2 = { text = "Hamming distance between `\"\"` and `\"\"` is `0`", met = false }
+3 = { text = "Hamming distance between strings of different lengths throws `RangeError`", met = false }
+4 = { text = "Bit-level Hamming distance between `1` and `4` is `2` (binary: 001 vs 100)", met = false }
+5 = { text = "Bit-level Hamming distance between `0` and `0` is `0`", met = false }
 6 = { text = "All unit tests pass", met = false }
-7 = { text = "README shows UUID encoding comparison table", met = false }
+7 = { text = "README documents usage with examples", met = false }
 
 [init]
-timestamp = "2026-03-22T01:13:34.738Z"
+timestamp = "2026-03-22T23:27:12.465Z"
 mode = "purge"
-mission = "4-kyu-apply-dense-encoding"
-mission-type = "4-kyu-apply-dense-encoding"
-version = "7.4.56"
+mission = "6-kyu-understand-hamming-distance"
+mission-type = "random"
+version = "7.4.57"

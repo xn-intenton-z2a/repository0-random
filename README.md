@@ -1,6 +1,6 @@
 # repo
 
-This repository is powered by [intentiön agentic-lib](https://github.com/xn-intenton-z2a/agentic-lib) — autonomous code transformation driven by GitHub Copilot. Write a mission, and the system generates issues, writes code, runs tests, and opens pull requests.
+This repository is powered by [intenti&ouml;n agentic-lib](https://github.com/xn-intenton-z2a/agentic-lib) — autonomous code transformation driven by GitHub Copilot. Write a mission, and the system generates issues, writes code, runs tests, and opens pull requests.
 
 ## Getting Started
 
@@ -100,46 +100,54 @@ Workflows ship with schedule **off** by default. Activate them from the GitHub A
 | weekly | Every week | Every month | Every week |
 | off | Never | Never | Never |
 
-## UUID encoding comparison
+## How It Works
 
-The library implements several dense, printable encodings. The table below shows a sample UUID and how the different encodings represent it (no padding):
-
-Sample UUID: `123e4567-e89b-12d3-a456-426614174000`
-
-| Format | Encoded value | Length |
-|--------|---------------|--------|
-| hex (canonical) | `123e4567e89b12d3a456426614174000` | 32 |
-| base64 (no padding) | `Ej5FZ+ibEtOkVkJmFBdAAA` | 22 |
-| base62 | `yqjPyWuWVBAloWtuR4THa` | 21 |
-| base85 (Z85) | `5r1#mNEK!ARuV^Mf6IFx` | 20 |
-| base91 | `BpmbthD9],?LHZR[m:<6` | 20 |
-| base89 (densest printable, ambiguous chars removed) | `#6V,Z(a(3NHj7dP4*QK4` | 20 |
-| uuid-shorthand (base89 + reversed) | `4KQ*4Pd7jHN3(a(Z,V6#` | 20 |
-
-As shown above, the densest built-in encodings produce shorter representations than base64 (no padding) for 16-byte UUIDs.
-
-## Usage examples
-
-Import the library (browser or Node):
-
-```js
-import { encode, decode, listEncodings, encodeUuid, decodeUuid } from './src/lib/main.js';
-
-// Encode arbitrary bytes
-const data = new Uint8Array([0x01, 0x02, 0x03]);
-const s = encode('base62', data);
-const back = decode('base62', s); // Uint8Array equal to data
-
-// List available encodings
-console.log(listEncodings());
-
-// Shorten a UUID
-const uuid = '123e4567-e89b-12d3-a456-426614174000';
-const shorthand = encodeUuid(uuid); // uses densest built-in by default ('base89') and reverses
-console.log(shorthand);
-console.log(decodeUuid(shorthand)); // returns canonical hyphenated UUID string
+```
+MISSION.md -> [supervisor] -> dispatch workflows -> Issue -> Code -> Test -> PR -> Merge
+                                                     ^                           |
+                                                     +---------------------------+
 ```
 
----
+The pipeline runs as GitHub Actions workflows. An LLM supervisor gathers repository context and dispatches other workflows. Each workflow uses the Copilot SDK to make targeted changes.
 
-See `src/lib/main.js` for full API docs and the built-in character sets. If you need a custom encoding, use `createCustomEncoding(name, charset)` to register one at runtime.
+## Configuration
+
+Edit `agentic-lib.toml` to tune the system:
+
+```toml
+[schedule]
+supervisor = "off"          # off | weekly | daily | hourly | continuous
+focus = "mission"           # mission | maintenance
+
+[tuning]
+profile = "max"             # min | med | max
+model = "gpt-5-mini"       # gpt-5-mini | claude-sonnet-4 | gpt-4.1
+
+[mission-complete]
+acceptance-criteria-threshold = 50   # % of criteria that must be met
+min-resolved-issues = 1              # minimum closed issues
+```
+
+## File Layout
+
+```
+src/lib/main.js              <- library (browser-safe)
+src/web/index.html            <- web page (imports ./lib.js)
+tests/unit/main.test.js       <- unit tests
+tests/behaviour/              <- Playwright E2E
+docs/                         <- build output for GitHub Pages
+```
+
+## Updating
+
+The `init` workflow updates the agentic infrastructure automatically. To update manually:
+
+```bash
+npx @xn-intenton-z2a/agentic-lib@latest init --purge
+```
+
+## Links
+
+- [MISSION.md](MISSION.md) — your project goals
+- [agentic-lib documentation](https://github.com/xn-intenton-z2a/agentic-lib) — full SDK docs
+- [intenti&ouml;n website](https://xn--intenton-z2a.com)
