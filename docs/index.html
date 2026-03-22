@@ -8,7 +8,7 @@
   <meta property="og:description" content="An autonomous repository powered by agentic-lib">
   <meta property="og:type" content="website">
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; color: #333; }
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }
     h1 { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
     a { color: #0366d6; }
     .identity { background: #f6f8fa; padding: 1rem; border-radius: 6px; margin: 1rem 0; font-family: monospace; }
@@ -33,30 +33,11 @@
   <p>This website uses the library. See <a href="https://github.com/xn-intenton-z2a/repository0">the repository</a> for source code and mission details.</p>
   <script type="module">
     try {
-      const {
-        name, version, description,
-        sineWave, randomWalk, movingAverageForecast, exponentialSmoothingForecast, generateReport
-      } = await import('./lib.js');
-
+      const { name, version, description } = await import('./lib.js');
       document.getElementById('lib-name').textContent = name;
       document.getElementById('lib-version').textContent = version;
       document.getElementById('lib-description').textContent = description || '(no description)';
-
-      // Demo: generate a sine wave and a forecast
-      const sine = sineWave({ periods: 2, samplesPerPeriod: 100, noise: 0, seed: 1 });
-      const rw = randomWalk({ seed: 42, steps: 10 });
-      const preds = movingAverageForecast(sine.slice(0, 100), { window: 10, horizon: 10 });
-      const report = generateReport([{ name: 'sine', data: sine }]);
-
-      document.getElementById('demo-output').textContent = JSON.stringify({
-        identity: { name, version, description },
-        sineLength: sine.length,
-        sineHead: sine.slice(0, 6),
-        randomWalkHead: rw.slice(0, 6),
-        forecastHead: preds,
-        reportPreview: report.split('\n').slice(0, 6).join('\n')
-      }, null, 2);
-
+      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, description }, null, 2);
       document.title = name + ' v' + version;
     } catch (e) {
       document.getElementById('lib-version').textContent = '(error)';
