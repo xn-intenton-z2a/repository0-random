@@ -47,16 +47,21 @@ async function gatherAndWriteData(octokit, owner, repoName, periodStart, periodE
   writeFileSync(`${REPORT_DATA_DIR}/state.toml`, stateContent);
   writeFileSync(`${REPORT_DATA_DIR}/mission.md`, missionContent);
 
-  // 2. Workflow runs
+  // 2. Workflow runs (paginate up to 200 for long-running scenarios)
   let workflowRuns = [];
   try {
-    const { data } = await octokit.rest.actions.listWorkflowRunsForRepo({
-      owner, repo: repoName, per_page: 50, created: `${periodStart}..${periodEnd}`,
-    });
-    workflowRuns = data.workflow_runs.map(r => ({
-      id: r.id, name: r.name, status: r.status, conclusion: r.conclusion,
-      created_at: r.created_at, updated_at: r.updated_at, html_url: r.html_url,
-    }));
+    for (let page = 1; page <= 2; page++) {
+      const { data } = await octokit.rest.actions.listWorkflowRunsForRepo({
+        owner, repo: repoName, per_page: 100, page, created: `${periodStart}..${periodEnd}`,
+      });
+      for (const r of data.workflow_runs) {
+        workflowRuns.push({
+          id: r.id, name: r.name, status: r.status, conclusion: r.conclusion,
+          created_at: r.created_at, updated_at: r.updated_at, html_url: r.html_url,
+        });
+      }
+      if (data.workflow_runs.length < 100) break;
+    }
   } catch (err) { core.warning(`Could not list runs: ${err.message}`); }
   writeFileSync(`${REPORT_DATA_DIR}/workflow-runs.json`, JSON.stringify(workflowRuns, null, 2));
 

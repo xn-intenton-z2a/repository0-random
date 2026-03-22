@@ -1317,6 +1317,10 @@ jobs:
           git config user.name 'GitHub Actions[bot]'
           BRANCH=$(git rev-parse --abbrev-ref HEAD)
           git add -A
+          # Unstage log/screenshot/state files — these live on the agentic-lib-logs branch
+          git reset HEAD -- 'intentïon.md' 'SCREENSHOT_INDEX.png' 2>/dev/null || true
+          git reset HEAD -- agent-log-*.md 2>/dev/null || true
+          git reset HEAD -- agentic-lib-state.toml 2>/dev/null || true
           if ! git diff --cached --quiet; then
             git commit -m "agentic-step: fix failing tests / resolve conflicts"
             git push origin HEAD:"$BRANCH" 2>&1 || git push --force-with-lease origin HEAD:"$BRANCH" 2>&1
@@ -1393,6 +1397,10 @@ jobs:
           git config --local user.email 'action@github.com'
           git config --local user.name 'GitHub Actions[bot]'
           git add -A
+          # Unstage log/screenshot/state files — these live on the agentic-lib-logs branch
+          git reset HEAD -- 'intentïon.md' 'SCREENSHOT_INDEX.png' 2>/dev/null || true
+          git reset HEAD -- agent-log-*.md 2>/dev/null || true
+          git reset HEAD -- agentic-lib-state.toml 2>/dev/null || true
           git commit -m "agentic-step: fix broken main build (run ${{ env.FIX_RUN_ID }})"
           git push -u origin agentic-lib-fix-main-build
           gh pr create \
@@ -1746,15 +1754,18 @@ jobs:
                 try {
                   await github.rest.pulls.merge({
                     owner, repo, pull_number: prNumber, merge_method: 'squash',
+                    commit_message: closesLines + '\n\nAutomated transformation.',
                   });
                   core.info(`Merged PR #${prNumber}`);
                   try {
                     await github.rest.git.deleteRef({ owner, repo, ref: `heads/${branchName}` });
                   } catch (e) {}
-                  if (issueNumber) {
+                  // Close all referenced issues (belt-and-suspenders with Closes keywords)
+                  for (const num of issueNumbers) {
                     try {
-                      await github.rest.issues.addLabels({ owner, repo, issue_number: parseInt(issueNumber), labels: ['merged'] });
-                      await github.rest.issues.removeLabel({ owner, repo, issue_number: parseInt(issueNumber), name: 'in-progress' });
+                      await github.rest.issues.update({ owner, repo, issue_number: parseInt(num), state: 'closed' });
+                      await github.rest.issues.addLabels({ owner, repo, issue_number: parseInt(num), labels: ['merged'] });
+                      await github.rest.issues.removeLabel({ owner, repo, issue_number: parseInt(num), name: 'in-progress' });
                     } catch (e) {}
                   }
                   return;

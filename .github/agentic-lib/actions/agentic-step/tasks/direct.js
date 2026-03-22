@@ -70,7 +70,6 @@ async function buildMetricAssessment(ctx, config) {
   const minResolved = thresholds.minResolvedIssues ?? 1;
   const maxTodos = thresholds.maxSourceTodos ?? 0;
   const minCumulativeTransforms = thresholds.minCumulativeTransforms ?? 1;
-  const acceptanceThreshold = thresholds.acceptanceCriteriaThreshold ?? 50;
   const requireNoOpenIssues = thresholds.requireNoOpenIssues ?? true;
   const requireNoOpenPrs = thresholds.requireNoOpenPrs ?? true;
   const requireNoCriticalGaps = thresholds.requireNoCriticalGaps ?? true;
@@ -83,14 +82,16 @@ async function buildMetricAssessment(ctx, config) {
   } catch { /* ignore parse errors */ }
   const criticalGaps = reviewGaps.filter((g) => g.severity === "critical");
 
-  // Acceptance criteria from MISSION.md checkboxes (or structured TOML if available)
+  // Acceptance criteria — informational only (not a mechanical gate).
+  // The director LLM reads criteria from MISSION.md and assesses them directly.
   const { countAcceptanceCriteria } = await import("../../../copilot/telemetry.js");
   const missionPath = config.paths?.mission?.path || "MISSION.md";
   const acceptance = countAcceptanceCriteria(missionPath);
   const acceptancePct = acceptance.total > 0 ? (acceptance.met / acceptance.total) * 100 : 0;
-  const acceptanceMet = acceptance.total > 0 && acceptancePct >= acceptanceThreshold;
 
-  // C6: Removed "Dedicated tests" metric; using cumulative transforms instead
+  // FIX-10: Require at least one test file that imports from src/lib/
+  const { dedicatedTestCount } = detectDedicatedTests();
+
   const metrics = [
     { metric: "Open issues", value: ctx.issuesSummary.length, target: 0, met: requireNoOpenIssues ? ctx.issuesSummary.length === 0 : true },
     { metric: "Open PRs", value: ctx.prsSummary.length, target: 0, met: requireNoOpenPrs ? ctx.prsSummary.length === 0 : true },
@@ -99,7 +100,8 @@ async function buildMetricAssessment(ctx, config) {
     { metric: "Cumulative transforms", value: ctx.cumulativeTransformationCost, target: minCumulativeTransforms, met: ctx.cumulativeTransformationCost >= minCumulativeTransforms },
     { metric: "Budget", value: ctx.cumulativeTransformationCost, target: ctx.transformationBudget || "unlimited", met: !(ctx.transformationBudget > 0 && ctx.cumulativeTransformationCost >= ctx.transformationBudget) },
     { metric: "Implementation review", value: criticalGaps.length === 0 ? "No critical gaps" : `${criticalGaps.length} critical gap(s)`, target: "No critical gaps", met: requireNoCriticalGaps ? criticalGaps.length === 0 : true },
-    { metric: "Acceptance criteria", value: acceptance.total > 0 ? `${acceptance.met}/${acceptance.total} (${Math.round(acceptancePct)}%)` : "N/A", target: `>= ${acceptanceThreshold}%`, met: acceptanceMet },
+    { metric: "Acceptance criteria", value: acceptance.total > 0 ? `${acceptance.met}/${acceptance.total} (${Math.round(acceptancePct)}%)` : "N/A", target: "informational", met: true },
+    { metric: "Dedicated test files", value: dedicatedTestCount, target: ">= 1", met: dedicatedTestCount >= 1 },
   ];
 
   const allMet = metrics.every((m) => m.met);

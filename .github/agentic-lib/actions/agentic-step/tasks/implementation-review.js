@@ -215,49 +215,13 @@ export async function implementationReview(context) {
           }
         }
 
-        // Also update MISSION.md checkboxes (best-effort, not critical)
-        if (metCriteria.length > 0 || metIndices.length > 0) {
-          try {
-            const missionPath = config.paths?.mission?.path || "MISSION.md";
-            const { readFileSync, writeFileSync } = await import("fs");
-            let missionContent = readFileSync(missionPath, "utf8");
-            let checkedCount = 0;
-
-            // Index-based update: find the Nth checkbox and check it
-            if (metIndices.length > 0) {
-              const lines = missionContent.split("\n");
-              let checkboxIdx = 0;
-              for (let i = 0; i < lines.length; i++) {
-                if (/^- \[ \] /.test(lines[i])) {
-                  checkboxIdx++;
-                  if (metIndices.includes(checkboxIdx)) {
-                    lines[i] = lines[i].replace(/^- \[ \] /, "- [x] ");
-                    checkedCount++;
-                  }
-                }
-              }
-              missionContent = lines.join("\n");
-            }
-
-            // Text-based update (fallback for backwards compatibility)
-            if (checkedCount === 0 && metCriteria.length > 0) {
-              for (const criterionText of metCriteria) {
-                const escaped = criterionText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").trim();
-                const re = new RegExp(`- \\[ \\] ${escaped}`);
-                if (re.test(missionContent)) {
-                  missionContent = missionContent.replace(re, `- [x] ${criterionText.trim()}`);
-                  checkedCount++;
-                }
-              }
-            }
-
-            if (checkedCount > 0) {
-              writeFileSync(missionPath, missionContent, "utf8");
-              core.info(`Updated ${checkedCount} acceptance criteria checkboxes in ${missionPath}`);
-            }
-          } catch (err) {
-            core.warning(`Could not update MISSION.md checkboxes: ${err.message}`);
-          }
+        // Log acceptance criteria status (informational — no longer writes to MISSION.md
+        // to avoid zero-diff commits that inflate transform counts)
+        if (metIndices.length > 0) {
+          core.info(`Review found ${metIndices.length} acceptance criteria met by index: [${metIndices.join(", ")}]`);
+        }
+        if (metCriteria.length > 0) {
+          core.info(`Review found ${metCriteria.length} acceptance criteria met by text`);
         }
 
         return { textResultForLlm: `Review recorded: ${elements?.length || 0} elements traced, ${gaps?.length || 0} gaps found, ${totalUpdated} criteria checked` };
