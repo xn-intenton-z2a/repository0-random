@@ -134,32 +134,9 @@ min-resolved-issues = 1              # minimum closed issues
 src/lib/main.js              <- library (browser-safe)
 src/web/index.html            <- web page (imports ./lib.js)
 tests/unit/main.test.js       <- unit tests
-tests/unit/encodings.test.js  <- encodings unit tests
 tests/behaviour/              <- Playwright E2E
 docs/                         <- build output for GitHub Pages
 ```
-
-## UUID Encoding Comparison
-
-Example UUID: `00112233-4455-6677-8899-aabbccddeeff`
-
-The library provides a "UUID shorthand" which:
-- strips the dashes from the canonical UUID
-- encodes the resulting 16 bytes using a named encoding
-- reverses the encoded string (this reversed form is the shorthand used in the website demo)
-
-| Encoding | Example (shorthand) | Length |
-|---------:|:--------------------|:------:|
-| hex      | `00112233445566778899aabbccddeeff` | 32 |
-| base64 (no padding) | `ABEiM0RVZneImaq7zN3u/w` | 22 |
-| base62 (shorthand) | `Z7EcVADEC1Gnt9B2OsP70` | 21 |
-| base85 (shorthand) | `0o@=KG$#9aI!t}As@T10` | 20 |
-| base91 (shorthand) | `{yM(P\\^M3'v/DlBx3M!` | 19 |
-
-Notes:
-- The examples above are produced by this library (see `src/web/index.html` demo output) and show the shorthand (reversed) representation; the plain encoded string can be recovered by reversing the shorthand before decoding.
-- To decode a shorthand value: reverse the string and then call decode(encodingName, reversedString) or use the helper decodeUuid(shorthand, encodingName).
-- See `src/lib/main.js` for the exact alphabets used and the `listEncodings()` API to inspect registered encodings.
 
 ## Updating
 

@@ -33,26 +33,12 @@
   <p>This website uses the library. See <a href="https://github.com/xn-intenton-z2a/repository0">the repository</a> for source code and mission details.</p>
   <script type="module">
     try {
-      const lib = await import('./lib.js');
-      const { name, version, description, listEncodings, encodeUuid } = lib;
+      const { name, version, description } = await import('./lib.js');
       document.getElementById('lib-name').textContent = name;
       document.getElementById('lib-version').textContent = version;
       document.getElementById('lib-description').textContent = description || '(no description)';
+      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, description }, null, 2);
       document.title = name + ' v' + version;
-
-      // Demo: encode a sample UUID with available encodings
-      const uuid = '00112233-4455-6677-8899-aabbccddeeff';
-      const encs = listEncodings();
-      let out = {};
-      for (const e of encs) {
-        try {
-          const s = encodeUuid(uuid, e.name);
-          out[e.name] = { encoded: s, length: s.length, bitsPerChar: e.bitsPerChar, charsetSize: e.charsetSize };
-        } catch (err) {
-          out[e.name] = { error: String(err) };
-        }
-      }
-      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, uuid, encodings: out }, null, 2);
     } catch (e) {
       document.getElementById('lib-version').textContent = '(error)';
       document.getElementById('lib-description').textContent = e.message;

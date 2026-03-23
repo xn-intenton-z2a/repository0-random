@@ -1,40 +1,35 @@
 # Mission
 
-A JavaScript library that explores the frontier of binary-to-text encoding density using printable characters. The benchmark: produce the shortest possible printable representation of a v7 UUID.
+A JavaScript library that simulates a lunar lander descent and provides an autopilot controller.
+
+## Physics Model (1D simplified)
+
+- Initial altitude: 1000m, initial velocity: 40 m/s (toward surface), fuel: 25 units
+- Gravity: adds 2 m/s per tick to velocity (increasing downward speed)
+- Thrust: each fuel unit burned reduces velocity by 4 m/s
+- Landing: altitude reaches 0. Safe if velocity ≤ 4 m/s, crash if > 4 m/s
 
 ## Required Capabilities
 
-- Encode and decode arbitrary binary data (`Uint8Array`) using a named encoding.
-- Shorthand for UUID encoding: strip dashes from a UUID string, encode the 16 bytes, and reverse.
-- Define custom encodings from a character set string.
-- List available encodings with their bit density and charset info.
-
-## Built-in Encodings
-
-The library should implement progressively denser encodings:
-
-- `base62` — `[0-9a-zA-Z]`, ~5.95 bits/char, URL-safe, 22 chars for a UUID
-- `base85` (Ascii85/Z85) — ~6.41 bits/char, 20 chars for a UUID
-- `base91` — ~6.50 bits/char, ~20 chars for a UUID
-- Optionally: custom higher bases using printable ASCII characters U+0021–U+007E (excluding space), omitting ambiguous characters (`0`/`O`, `1`/`l`/`I`)
+- Create a lander state with configurable initial conditions (altitude, velocity, fuel). Defaults to the values above.
+- Advance one tick: burn thrust fuel (clamped to available fuel), apply gravity and thrust, return a new immutable state. State objects are plain objects: `{ altitude, velocity, fuel, tick, landed, crashed }`.
+- Simulate to completion using a controller function `(state) => thrustUnits` and return the full trace (array of states).
+- Provide a built-in autopilot controller that lands safely. This is the algorithmically interesting part.
+- Score a landing: `0` for crash, otherwise `(initialFuel - fuelUsed) * 10 + Math.max(0, (4 - landingVelocity) * 25)`. Higher is better.
 
 ## Requirements
 
-- Round-trip property: decoding an encoded value must equal the original for all inputs and all encodings.
-- No control characters. Exclude visually ambiguous characters (`0`/`O`, `1`/`l`/`I`) from custom charsets.
-- Input type for encode/decode is `Uint8Array`.
-- Baseline comparison: UUID hex = 32 chars, base64 (no padding) = 22 chars. The densest encoding should produce fewer than 22 characters for a UUID.
-- Test across edge cases: all-zero bytes, all-0xFF bytes, single byte, empty buffer.
-- Compare encoded UUID lengths across all encodings.
+- The autopilot must land safely across a range of initial conditions: altitude 500–2000m, velocity 20–80 m/s, fuel 10–50 units. Some combinations are physically impossible to survive (e.g. velocity 80 m/s with fuel 10) — the autopilot should return a crash trace, not throw.
 - Export all public API as named exports from `src/lib/main.js`.
-- README with UUID encoding comparison table.
+- Comprehensive unit tests including physics correctness, autopilot safety across parameter ranges, and edge cases (zero fuel, already landed).
+- README with example simulation output showing a successful landing trace.
 
 ## Acceptance Criteria
 
-- [ ] At least 3 working encodings (base62, base85, one higher)
-- [ ] Round-trip correct for arbitrary binary data including edge cases
-- [ ] UUID encoding shorter than base64 (< 22 chars) for the densest encoding
-- [ ] Listing encodings returns encoding metadata (name, bits/char, charset size)
-- [ ] Custom encoding can be created from a charset string
+- [ ] Stepping correctly applies gravity and thrust physics
+- [ ] Autopilot lands safely with default initial conditions
+- [ ] Autopilot lands safely across at least 10 different (altitude, velocity, fuel) combinations
+- [ ] Scoring returns 0 for crashes, positive for safe landings using the formula `(initialFuel - fuelUsed) * 10 + Math.max(0, (4 - landingVelocity) * 25)`
+- [ ] Simulation returns a complete trace from start to landing
 - [ ] All unit tests pass
-- [ ] README shows UUID encoding comparison table
+- [ ] README shows example simulation output
