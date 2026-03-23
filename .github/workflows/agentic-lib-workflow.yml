@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (C) 2025-2026 Polycode Limited
 # .github/workflows/agentic-lib-workflow.yml
-# Schedule updated: 2026-03-23T00:41:05.921Z
 #
 # Main autonomous pipeline: supervisor + maintain + review + dev + PR cleanup.
 # Replaces agent-supervisor, agent-flow-transform, agent-flow-review,
@@ -18,7 +17,7 @@ concurrency:
 
 on:
   schedule:
-    - cron: "0 0 31 2 *"
+    - cron: "0 0 28 2 *"
   workflow_call:
     inputs:
       ref:
@@ -282,16 +281,20 @@ jobs:
                     await github.rest.git.deleteRef({ owner, repo, ref: `heads/${pr.head.ref}` });
                   } catch (e) { core.info(`Could not delete branch: ${e.message}`); }
 
-                  // Label associated issue
+                  // Close associated issues — extract from PR body (Closes #N) and branch name
+                  const closesMatches = (pr.body || '').matchAll(/(?:Closes|Fixes|Resolves)\s+#(\d+)/gi);
+                  const issueNums = new Set([...closesMatches].map(m => parseInt(m[1])));
                   const branchPrefix = 'agentic-lib-issue-';
                   if (pr.head.ref.startsWith(branchPrefix)) {
-                    const issueNum = parseInt(pr.head.ref.replace(branchPrefix, ''));
-                    if (issueNum) {
-                      try {
-                        await github.rest.issues.addLabels({ owner, repo, issue_number: issueNum, labels: ['merged'] });
-                        await github.rest.issues.removeLabel({ owner, repo, issue_number: issueNum, name: 'in-progress' });
-                      } catch (e) { /* label may not exist */ }
-                    }
+                    const branchIssueNum = parseInt(pr.head.ref.replace(branchPrefix, ''));
+                    if (branchIssueNum) issueNums.add(branchIssueNum);
+                  }
+                  for (const issueNum of issueNums) {
+                    try {
+                      await github.rest.issues.update({ owner, repo, issue_number: issueNum, state: 'closed' });
+                      await github.rest.issues.addLabels({ owner, repo, issue_number: issueNum, labels: ['merged'] });
+                      await github.rest.issues.removeLabel({ owner, repo, issue_number: issueNum, name: 'in-progress' });
+                    } catch (e) { /* label may not exist */ }
                   }
                   mergedPRs.push(pr.number);
                 } catch (e) {
@@ -1243,6 +1246,10 @@ jobs:
             npm install 2>/dev/null || true
 
             git add -A
+            # Unstage log/screenshot/state files — these live on the agentic-lib-logs branch
+            git reset HEAD -- 'intentïon.md' 'SCREENSHOT_INDEX.png' 2>/dev/null || true
+            git reset HEAD -- agent-log-*.md 2>/dev/null || true
+            git reset HEAD -- agentic-lib-state.toml 2>/dev/null || true
             if ! git diff --cached --quiet; then
               git commit -m "fix-stuck: sync with main (resolve conflicts)"
               git push --force-with-lease origin HEAD:"$BRANCH" 2>&1 && RESOLVED=true
@@ -1361,16 +1368,20 @@ jobs:
                   try {
                     await github.rest.git.deleteRef({ owner, repo, ref: `heads/${pr.head.ref}` });
                   } catch (e) { /* branch may already be deleted */ }
-                  // Label associated issue
-                  const branchPrefix = 'agentic-lib-issue-';
-                  if (pr.head.ref.startsWith(branchPrefix)) {
-                    const issueNum = parseInt(pr.head.ref.replace(branchPrefix, ''));
-                    if (issueNum) {
-                      try {
-                        await github.rest.issues.addLabels({ owner, repo, issue_number: issueNum, labels: ['merged'] });
-                        await github.rest.issues.removeLabel({ owner, repo, issue_number: issueNum, name: 'in-progress' });
-                      } catch (e) { /* label may not exist */ }
-                    }
+                  // Close associated issues — extract from PR body (Closes #N) and branch name
+                  const closesMatches2 = (pr.body || '').matchAll(/(?:Closes|Fixes|Resolves)\s+#(\d+)/gi);
+                  const issueNums2 = new Set([...closesMatches2].map(m => parseInt(m[1])));
+                  const branchPrefix2 = 'agentic-lib-issue-';
+                  if (pr.head.ref.startsWith(branchPrefix2)) {
+                    const branchIssueNum = parseInt(pr.head.ref.replace(branchPrefix2, ''));
+                    if (branchIssueNum) issueNums2.add(branchIssueNum);
+                  }
+                  for (const issueNum of issueNums2) {
+                    try {
+                      await github.rest.issues.update({ owner, repo, issue_number: issueNum, state: 'closed' });
+                      await github.rest.issues.addLabels({ owner, repo, issue_number: issueNum, labels: ['merged'] });
+                      await github.rest.issues.removeLabel({ owner, repo, issue_number: issueNum, name: 'in-progress' });
+                    } catch (e) { /* label may not exist */ }
                   }
                   return;
                 } catch (e) {

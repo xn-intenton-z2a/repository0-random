@@ -20,12 +20,17 @@ const REPORT_DATA_DIR = "/tmp/report-data";
 async function findLatestInitRun(octokit, owner, repo) {
   try {
     const { data } = await octokit.rest.actions.listWorkflowRunsForRepo({
-      owner, repo, per_page: 20,
+      owner, repo, per_page: 50,
     });
-    const initRuns = data.workflow_runs
-      .filter(r => r.name && r.name.includes("agentic-lib-init"))
+    // Look for standalone init runs or flow runs (init may be embedded in flow)
+    const relevantRuns = data.workflow_runs
+      .filter(r => r.name && (r.name.includes("agentic-lib-init") || r.name.includes("agentic-lib-flow")))
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    if (initRuns.length > 0) return initRuns[0].created_at;
+    // Prefer the most recent init run; fall back to the most recent flow run
+    const initRun = relevantRuns.find(r => r.name.includes("agentic-lib-init"));
+    const flowRun = relevantRuns.find(r => r.name.includes("agentic-lib-flow"));
+    const bestRun = initRun || flowRun;
+    if (bestRun) return bestRun.created_at;
   } catch (err) {
     core.warning(`Could not find init runs: ${err.message}`);
   }

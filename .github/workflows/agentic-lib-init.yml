@@ -10,8 +10,6 @@ name: agentic-lib-init
 run-name: "agentic-lib-init ${{ inputs.mode || 'update' }} [${{ github.ref_name }}]"
 
 on:
-  schedule:
-    - cron: "0 0 31 2 *"
   workflow_call:
     inputs:
       ref:
@@ -378,6 +376,10 @@ jobs:
           git config user.name "${TOKEN_USER}"
           git config user.email "${TOKEN_ID}+${TOKEN_USER}@users.noreply.github.com"
           git add -A
+          # Unstage log/screenshot/state files — these live on the agentic-lib-logs branch
+          git reset HEAD -- 'intentïon.md' 'SCREENSHOT_INDEX.png' 2>/dev/null || true
+          git reset HEAD -- agent-log-*.md 2>/dev/null || true
+          git reset HEAD -- agentic-lib-state.toml 2>/dev/null || true
           git diff --cached --quiet && echo "No changes" && exit 0
           VERSION=$(npx @xn-intenton-z2a/agentic-lib version 2>/dev/null || echo "latest")
           # Problem 1 fix: Don't use [skip ci] when workflow files changed.
