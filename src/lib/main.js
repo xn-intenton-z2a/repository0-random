@@ -225,8 +225,8 @@ function basE91Decode(text) {
 // Register built-ins using base-x for base62/base85 and basE91 for base91
 createEncodingFromCharset('base62', BASE62_CHARS, { allowAmbiguous: true });
 createEncodingFromCharset('base85', BASE85_CHARS, { allowAmbiguous: true });
-// register base91 as a custom object
-registerEncoding({ name: 'base91', charset: (typeof _BASE91_FINAL !== 'undefined' ? _BASE91_FINAL : BASE91_CHARS), charsetSize: 91, bitsPerChar: Math.log2(91), encode: basE91Encode, decode: basE91Decode });
+// register base91 using the generic base encoder (BigInt-based)
+createEncodingFromCharset('base91', (typeof _BASE91_FINAL !== 'undefined' ? _BASE91_FINAL : BASE91_CHARS), { allowAmbiguous: true });
 
 // convenience wrappers
 function encode(encodingName, data) {
