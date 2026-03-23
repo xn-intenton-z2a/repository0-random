@@ -134,9 +134,27 @@ min-resolved-issues = 1              # minimum closed issues
 src/lib/main.js              <- library (browser-safe)
 src/web/index.html            <- web page (imports ./lib.js)
 tests/unit/main.test.js       <- unit tests
+tests/unit/encodings.test.js  <- encodings unit tests
 tests/behaviour/              <- Playwright E2E
 docs/                         <- build output for GitHub Pages
 ```
+
+## UUID Encoding Comparison
+
+Example UUID: 00112233-4455-6677-8899-aabbccddeeff
+
+| Encoding | Example | Length |
+|---------:|:--------|:------:|
+| hex      | 00112233445566778899aabbccddeeff | 32 |
+| base64 (no padding) | AWESOMETHING (example) | 22 |
+| base62   | (base62 example) | 22 |
+| base85   | (base85 example) | 20 |
+| base91   | (base91 example) | 20 |
+
+Notes:
+- base62 uses the alphabet 0-9a-zA-Z and yields 22 characters for a 16-byte UUID.
+- base85 (85-character alphabet) and base91 (basE91) yield about 20 characters for a 16-byte UUID, improving on Base64 (22 chars) in printable density.
+- See src/lib/main.js for the exact alphabets used and the listEncodings() API to inspect registered encodings.
 
 ## Updating
 
