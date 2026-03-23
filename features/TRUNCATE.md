@@ -10,3 +10,4 @@ Acceptance Criteria
 - Truncating "Short" to length 10 returns "Short".
 - Custom suffixes are supported and counted against the requested length.
 - Null or undefined input returns an empty string.
+- The function is exported as a named export from src/lib/main.js.

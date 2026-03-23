@@ -9,3 +9,4 @@ Acceptance Criteria
 - The Levenshtein distance between "kitten" and "sitting" is 3.
 - The Levenshtein distance between two empty strings is 0.
 - Null or undefined inputs are treated as empty strings.
+- The function is exported as a named export from src/lib/main.js.

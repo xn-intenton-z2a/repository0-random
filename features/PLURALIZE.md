@@ -11,3 +11,4 @@ Acceptance Criteria
 - pluralize of "knife" returns "knives".
 - pluralize of "cat" returns "cats".
 - Null or empty input returns an empty string.
+- The function is exported as a named export from src/lib/main.js.

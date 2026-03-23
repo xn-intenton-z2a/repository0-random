@@ -11,3 +11,4 @@ Acceptance Criteria
 - Slugifying "café" returns "cafe".
 - Null or undefined input returns an empty string.
 - Unicode diacritics are removed where possible and results remain URL-safe.
+- The function is exported as a named export from src/lib/main.js.

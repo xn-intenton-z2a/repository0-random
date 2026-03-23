@@ -8,3 +8,4 @@ Acceptance Criteria
 
 - escapeRegex applied to a string containing special regex characters returns a new string where each regex-significant character is prefixed with a backslash.
 - Null or empty input returns an empty string.
+- The function is exported as a named export from src/lib/main.js.

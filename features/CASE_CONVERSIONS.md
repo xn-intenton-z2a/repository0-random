@@ -10,3 +10,4 @@ Acceptance Criteria
 - kebabCase of "Hello World" returns "hello-world".
 - titleCase of "hello world" returns "Hello World".
 - Null or empty input returns an empty string.
+- Each function is exported as a named export from src/lib/main.js.

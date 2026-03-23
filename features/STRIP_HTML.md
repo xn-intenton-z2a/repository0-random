@@ -9,3 +9,4 @@ Acceptance Criteria
 - stripHtml applied to "<p>Hello &amp; welcome</p>" returns "Hello & welcome".
 - stripHtml applied to "<div><span>Text</span></div>" returns "Text".
 - Null or empty input returns an empty string.
+- The function is exported as a named export from src/lib/main.js.
