@@ -1,0 +1,21 @@
+{
+  "uuid": "00112233-4455-6677-8899-aabbccddeeff",
+  "base64": "ABEiM0RVZneImaq7zN3u/w",
+  "encodings": {
+    "base62": {
+      "plain": "07PsO2B9tnG1CEDAVcE7Z",
+      "shorthand": "Z7EcVADEC1Gnt9B2OsP70",
+      "length": 21
+    },
+    "base85": {
+      "plain": "01T@sA}t!Ia9#$GK=@o0",
+      "shorthand": "0o@=KG$#9aI!t}As@T10",
+      "length": 20
+    },
+    "base91": {
+      "plain": "!M3xBlD/v'3M^\\P(My{",
+      "shorthand": "{yM(P\\^M3'v/DlBx3M!",
+      "length": 19
+    }
+  }
+}
