@@ -27,6 +27,196 @@ export function getIdentity() {
   return { name, version, description };
 }
 
+// --------------------- String Utilities ---------------------
+
+// Handle null/undefined by returning empty string for string-returning utilities
+
+export function slugify(input) {
+  if (input == null) return "";
+  let s = String(input);
+  // Normalize and remove diacritic marks where possible
+  if (s.normalize) s = s.normalize("NFKD").replace(/\p{M}/gu, "");
+  s = s.toLowerCase();
+  // Replace non-letter/number sequences with hyphen (Unicode aware)
+  s = s.replace(/[^0-9\p{L}]+/gu, "-");
+  s = s.replace(/(^-|-$)/g, "");
+  s = s.replace(/-+/g, "-");
+  return s;
+}
+
+export function truncate(input, maxLength, suffix = "…") {
+  if (input == null) return "";
+  const s = String(input);
+  if (maxLength == null || !Number.isFinite(maxLength)) return s;
+  const max = Math.max(0, Math.floor(maxLength));
+  const suf = String(suffix ?? "…");
+  if (s.length <= max) return s;
+  const keep = Math.max(0, max - suf.length);
+  if (keep === 0) return suf.slice(0, max);
+  let truncated = s.slice(0, keep);
+  // Avoid breaking mid-word only when the original string was cut mid-word
+  const nextChar = s.charAt(keep);
+  if (nextChar && /\S/.test(nextChar)) {
+    const lastSpace = Math.max(
+      truncated.lastIndexOf(' '),
+      truncated.lastIndexOf('\n'),
+      truncated.lastIndexOf('\t')
+    );
+    if (lastSpace > 0) truncated = truncated.slice(0, lastSpace);
+  }
+  return truncated + suf;
+}
+
+export function camelCase(input) {
+  if (input == null) return "";
+  const s = String(input).trim();
+  if (!s) return "";
+  const parts = s.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  return parts
+    .map((p, i) => {
+      const lower = p.toLowerCase();
+      if (i === 0) return lower;
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    })
+    .join('');
+}
+
+export function kebabCase(input) {
+  if (input == null) return "";
+  let s = String(input);
+  if (s.normalize) s = s.normalize('NFKD').replace(/\p{M}/gu, '');
+  // Replace case boundaries and non-alphanumerics with hyphen
+  s = s.replace(/([a-z0-9])([A-Z])/g, '$1-$2');
+  s = s.replace(/[^0-9\p{L}]+/gu, '-');
+  s = s.replace(/-+/g, '-');
+  s = s.replace(/(^-|-$)/g, '');
+  return s.toLowerCase();
+}
+
+export function titleCase(input) {
+  if (input == null) return "";
+  const s = String(input);
+  return s
+    .split(/(\s+)/)
+    .map((part) => {
+      if (/^\s+$/.test(part)) return part;
+      return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+    })
+    .join('');
+}
+
+export function wordWrap(input, width = 80) {
+  if (input == null) return "";
+  const text = String(input);
+  const w = Math.max(1, Math.floor(width));
+  // Preserve existing newlines by wrapping each paragraph separately
+  const paragraphs = text.split(/\r?\n/);
+  const wrapped = paragraphs.map((para) => {
+    const words = para.split(/\s+/).filter(Boolean);
+    if (words.length === 0) return '';
+    const lines = [];
+    let line = '';
+    for (const word of words) {
+      if (line.length === 0) {
+        // Start line with word
+        line = word;
+      } else if (line.length + 1 + word.length <= w) {
+        line += ' ' + word;
+      } else {
+        // Word would exceed width
+        if (word.length > w) {
+          // Place long word on its own line unbroken
+          lines.push(line);
+          lines.push(word);
+          line = '';
+        } else {
+          lines.push(line);
+          line = word;
+        }
+      }
+    }
+    if (line.length > 0) lines.push(line);
+    return lines.join('\n');
+  });
+  return wrapped.join('\n');
+}
+
+export function stripHtml(input) {
+  if (input == null) return "";
+  let s = String(input);
+  // Remove script/style contents
+  s = s.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '');
+  s = s.replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '');
+  // Remove tags
+  s = s.replace(/<[^>]+>/g, '');
+  // Decode basic HTML entities
+  const entities = {
+    amp: '&',
+    lt: '<',
+    gt: '>',
+    quot: '"',
+    apos: "'",
+    nbsp: ' ',
+  };
+  s = s.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (m, code) => {
+    if (code[0] === '#') {
+      const isHex = code[1] === 'x' || code[1] === 'X';
+      const num = isHex ? parseInt(code.slice(2), 16) : parseInt(code.slice(1), 10);
+      if (!Number.isNaN(num)) return String.fromCodePoint(num);
+      return m;
+    }
+    const val = entities[code.toLowerCase()];
+    return val !== undefined ? val : m;
+  });
+  return s;
+}
+
+export function escapeRegex(input) {
+  if (input == null) return "";
+  return String(input).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function pluralize(input) {
+  if (input == null) return "";
+  const s = String(input);
+  if (!s) return "";
+  const lower = s.toLowerCase();
+  if (/(s|x|z|ch|sh)$/.test(lower)) return s + 'es';
+  if (/[^aeiou]y$/.test(lower)) return s.slice(0, -1) + 'ies';
+  if (/(?:fe|f)$/.test(lower)) {
+    if (lower.endsWith('fe')) return s.slice(0, -2) + 'ves';
+    return s.slice(0, -1) + 'ves';
+  }
+  return s + 's';
+}
+
+export function levenshtein(a, b) {
+  const sa = a == null ? '' : String(a);
+  const sb = b == null ? '' : String(b);
+  const aArr = Array.from(sa);
+  const bArr = Array.from(sb);
+  const m = aArr.length;
+  const n = bArr.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = aArr[i - 1] === bArr[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1, // deletion
+        dp[i][j - 1] + 1, // insertion
+        dp[i - 1][j - 1] + cost // substitution
+      );
+    }
+  }
+  return dp[m][n];
+}
+
+// --------------------- CLI Entrypoint ---------------------
+
 export function main(args) {
   if (args?.includes("--version")) {
     console.log(version);

@@ -8,7 +8,7 @@
   <meta property="og:description" content="An autonomous repository powered by agentic-lib">
   <meta property="og:type" content="website">
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; color: #333; }
     h1 { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
     a { color: #0366d6; }
     .identity { background: #f6f8fa; padding: 1rem; border-radius: 6px; margin: 1rem 0; font-family: monospace; }
@@ -33,11 +33,27 @@
   <p>This website uses the library. See <a href="https://github.com/xn-intenton-z2a/repository0">the repository</a> for source code and mission details.</p>
   <script type="module">
     try {
-      const { name, version, description } = await import('./lib.js');
+      const lib = await import('./lib.js');
+      const { name, version, description } = lib;
       document.getElementById('lib-name').textContent = name;
       document.getElementById('lib-version').textContent = version;
       document.getElementById('lib-description').textContent = description || '(no description)';
-      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, description }, null, 2);
+
+      // Demo uses of the string utilities
+      const demo = {
+        slugify: lib.slugify('Hello World!'),
+        truncate: lib.truncate('Hello World', 8),
+        camelCase: lib.camelCase('foo-bar-baz'),
+        kebabCase: lib.kebabCase('Foo Bar Baz'),
+        titleCase: lib.titleCase('the quick brown fox'),
+        wordWrap: lib.wordWrap('The quick brown fox jumps over the lazy dog', 12),
+        stripHtml: lib.stripHtml('<p>Hello &amp; <strong>world</strong></p>'),
+        escapeRegex: lib.escapeRegex('[test].*'),
+        pluralize: lib.pluralize('baby'),
+        levenshtein: lib.levenshtein('kitten', 'sitting')
+      };
+
+      document.getElementById('demo-output').textContent = JSON.stringify(demo, null, 2);
       document.title = name + ' v' + version;
     } catch (e) {
       document.getElementById('lib-version').textContent = '(error)';
