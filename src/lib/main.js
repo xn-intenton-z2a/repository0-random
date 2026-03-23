@@ -42,28 +42,32 @@ export function main(args) {
 // encoding library
 const encodings = new Map();
 
-function assertUint8Array(buf) {
-  if (!(buf instanceof Uint8Array)) throw new TypeError("data must be a Uint8Array");
+function toUint8Array(data) {
+  if (data instanceof Uint8Array) return data;
+  if (ArrayBuffer.isView(data)) return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+  if (data instanceof ArrayBuffer) return new Uint8Array(data);
+  throw new TypeError('data must be a Uint8Array or ArrayBuffer or TypedArray');
 }
 
 function registerEncoding(obj) {
   if (!obj || !obj.name) throw new Error("invalid encoding object");
+  // ensure charset is a string for consistent introspection
+  if (obj.charset && Array.isArray(obj.charset)) obj.charset = obj.charset.join('');
   encodings.set(obj.name, obj);
 }
 
 function listEncodings() {
-  const out = [];
-  for (const enc of encodings.values()) {
-    out.push({ name: enc.name, bitsPerChar: enc.bitsPerChar, charsetSize: enc.charset?.length ?? null });
-  }
-  return out;
+  // return a stable, sorted list by name
+  return Array.from(encodings.values()).slice().sort((a, b) => a.name.localeCompare(b.name)).map(enc => ({ name: enc.name, bitsPerChar: enc.bitsPerChar, charsetSize: enc.charset?.length ?? null }));
 }
 
 function createEncodingFromCharset(name, charset, options = {}) {
   if (typeof name !== 'string' || name.length === 0) throw new TypeError('name must be a non-empty string');
   if (typeof charset !== 'string' || charset.length < 2) throw new TypeError('charset must be a string with length >= 2');
+
   // Validate printable and uniqueness
-  const chars = Array.from(charset);
+  const alphabet = charset;
+  const chars = Array.from(alphabet);
   const set = new Set(chars);
   if (set.size !== chars.length) throw new Error('charset contains duplicate characters');
   for (const ch of chars) {
@@ -72,20 +76,19 @@ function createEncodingFromCharset(name, charset, options = {}) {
   }
   const ambiguous = ['0','O','1','l','I'];
   if (!options.allowAmbiguous) {
-    for (const a of ambiguous) if (charset.includes(a)) throw new Error('charset contains ambiguous characters; set allowAmbiguous=true to override');
+    for (const a of ambiguous) if (alphabet.includes(a)) throw new Error('charset contains ambiguous characters; set allowAmbiguous=true to override');
   }
 
-  const base = BigInt(chars.length);
-  const bitsPerChar = Math.log2(chars.length);
+  const base = BigInt(alphabet.length);
+  const bitsPerChar = Math.log2(alphabet.length);
 
-  // encode/decode using BigInt for correctness
-  function encode(bytes) {
-    assertUint8Array(bytes);
+  function encode(input) {
+    const bytes = toUint8Array(input);
     if (bytes.length === 0) return '';
-    // count leading zeros
+    // count leading zero bytes
     let zeros = 0;
     while (zeros < bytes.length && bytes[zeros] === 0) zeros++;
-    // convert remaining bytes to BigInt
+    // convert remaining bytes to BigInt (big-endian)
     let value = 0n;
     for (let i = zeros; i < bytes.length; i++) {
       value = (value << 8n) + BigInt(bytes[i]);
@@ -93,11 +96,16 @@ function createEncodingFromCharset(name, charset, options = {}) {
     let out = '';
     while (value > 0n) {
       const rem = value % base;
-      out = chars[Number(rem)] + out;
+      out = alphabet.charAt(Number(rem)) + out;
       value = value / base;
     }
-    // leading zero chars
-    for (let i = 0; i < zeros; i++) out = chars[0] + out;
+    // If numeric value is zero, emit either a single zero-char (no leading zero bytes)
+    // or repeat the zero-char for each leading zero byte.
+    if (out.length === 0) {
+      out = (zeros === 0) ? alphabet.charAt(0) : alphabet.charAt(0).repeat(zeros);
+    } else {
+      if (zeros > 0) out = alphabet.charAt(0).repeat(zeros) + out;
+    }
     return out;
   }
 
@@ -106,15 +114,15 @@ function createEncodingFromCharset(name, charset, options = {}) {
     if (text.length === 0) return new Uint8Array(0);
     // count leading zero chars
     let zeros = 0;
-    while (zeros < text.length && text[zeros] === chars[0]) zeros++;
+    while (zeros < text.length && text[zeros] === alphabet.charAt(0)) zeros++;
     // convert text to BigInt
     let value = 0n;
     for (let i = zeros; i < text.length; i++) {
-      const idx = chars.indexOf(text[i]);
+      const idx = alphabet.indexOf(text[i]);
       if (idx === -1) throw new Error('invalid character in input');
       value = value * base + BigInt(idx);
     }
-    // convert BigInt to bytes
+    // convert BigInt to bytes (big-endian)
     const bytes = [];
     while (value > 0n) {
       bytes.push(Number(value & 0xffn));
@@ -127,7 +135,7 @@ function createEncodingFromCharset(name, charset, options = {}) {
     return out;
   }
 
-  const enc = { name, charset: chars.join(''), charsetSize: chars.length, bitsPerChar, encode, decode };
+  const enc = { name, charset: alphabet, charsetSize: alphabet.length, bitsPerChar, encode, decode };
   registerEncoding(enc);
   return enc;
 }
@@ -140,7 +148,7 @@ const BASE85_CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUV
 createEncodingFromCharset('base62', BASE62_CHARS, { allowAmbiguous: true });
 createEncodingFromCharset('base85', BASE85_CHARS, { allowAmbiguous: true });
 
-// Create a base91 charset programmatically (printable ASCII without space)
+// Create a base91 charset programmatically (printable ASCII starting at '!')
 let base91chars = '';
 for (let i = 33; i <= 126 && base91chars.length < 91; i++) base91chars += String.fromCharCode(i);
 createEncodingFromCharset('base91', base91chars, { allowAmbiguous: true });
@@ -149,8 +157,8 @@ createEncodingFromCharset('base91', base91chars, { allowAmbiguous: true });
 function encode(encodingName, data) {
   const enc = encodings.get(encodingName);
   if (!enc) throw new Error(`unknown encoding: ${encodingName}`);
-  assertUint8Array(data);
-  return enc.encode(data);
+  const bytes = toUint8Array(data);
+  return enc.encode(bytes);
 }
 
 function decode(encodingName, text) {
