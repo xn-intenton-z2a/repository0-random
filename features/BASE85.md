@@ -1,31 +1,33 @@
 # BASE85
 
-Status: Merged; verification failing — see issue #72
+Status: Implemented; verification pending (CI failing — see issue #72)
 
 Test files: tests/unit/encodings.test.js
 
 Summary
-Implement Ascii85 (Adobe variant) encoding with optional Z85 compatibility. Provide encodeAscii85 and decodeAscii85 with options to enable or disable Adobe markers and 'z' shorthand.
-
-Motivation
-Base85 yields ~6.4105 bits per character and should encode a 16-byte UUID in roughly 20 characters.
+Implement Ascii85-compatible base85 encoding and decoding. Default library behaviour is deterministic: no Adobe markers, do not emit 'z' shorthand unless explicitly requested.
 
 Behavior
-- Accept and return Uint8Array/string as primary types.
-- Support options: adobeMarkers (wrap with <~ and ~>), allowZ (accept/emit 'z' shorthand for full-zero 4-byte groups).
-- For deterministic behaviour in the library default: do not emit adobe markers, allowZ = false unless explicitly enabled.
+- Accepts and returns Uint8Array/string.
+- Default options: adobeMarkers = false, allowZ = false.
+- When enabled, allowZ=true permits interpreting and emitting the 'z' shorthand for 4-byte groups of zeros.
 
 API
-- Exposed functions: encodeAscii85(data: Uint8Array, options?) -> string; decodeAscii85(text: string, options?) -> Uint8Array
-- Register under name: base85
+- Registered name: "base85"
+- Exposed helpers: encodeAscii85(data: Uint8Array, options?) -> string; decodeAscii85(text: string, options?) -> Uint8Array
+
+Numeric properties
+- charsetSize: 85
+- bitsPerChar: ≈ 6.4094 (compute in code with >=4 fractional digits)
+- Expected encoded length for a 16-byte UUID: 20 (default options)
 
 Tests
-- Round-trip tests across edge cases including final partial block behavior.
-- Special-case tests: group-of-four zeros expansion and 'z' handling when enabled.
-- UUID encoding length must be 20 characters in default mode (no adobe markers, no 'z' markers).
+- Round-trip tests across random and edge-case buffers including partial final blocks.
+- When allowZ is enabled, confirm 'z' shorthand is accepted by decode and optionally emitted by encode when the group rule applies.
+- Verify known UUID encoding length is 20 in default mode.
 
-Acceptance criteria
-- encodeAscii85 and decodeAscii85 are implemented and exported.
-- Round-trip tests including partial-block and 'z' behavior pass.
-- Encoding a 16-byte UUID yields 20 characters under default options.
-- listEncodings includes base85 with bitsPerChar ≈ 6.4105 and charsetSize = 85.
+Acceptance criteria (testable)
+- encodeAscii85 and decodeAscii85 are exported and callable.
+- Round-trip tests including partial-block cases pass.
+- When testing default options (no markers, no z), encoding a canonical 16-byte UUID yields a 20-character string.
+- listEncodings() includes an entry { name: 'base85', charsetSize: 85, bitsPerChar: closeTo(6.4094, 1e-4) }.

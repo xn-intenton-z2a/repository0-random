@@ -1,29 +1,26 @@
 # ENCODINGS_LIST
 
-Status: Merged; verification failing — see issue #72
+Status: Implemented; verification pending (CI failing — see issue #72)
 
 Test files: tests/unit/encodings.test.js
 
 Summary
-Implement listEncodings() which returns an array of encoding metadata objects for all built-in and registered encodings.
-
-Motivation
-Consumers need a programmatic way to discover which encodings exist and compare their density and character sets.
+Implement listEncodings() which returns metadata for all built-in and registered encodings so consumers can compare density and choose appropriate charsets.
 
 Behavior
-- listEncodings() -> Array of objects with fields:
+- listEncodings() -> Array of encoding metadata objects with fields:
   - name: string
   - charsetSize: integer
-  - bitsPerChar: number (log2(charsetSize) with at least 4 fractional digits)
-  - sampleLengthFor16Bytes: integer (expected encoded length for a 16-byte buffer, computed as ceil(128 / bitsPerChar))
-  - urlSafe: boolean (whether charset is safe for URLs without escaping)
-- Built-in encodings that must appear: base62, base85, printable-dense (or equivalent), plus any registered custom encodings.
+  - bitsPerChar: number (log2(charsetSize), provide at least 4 decimal places)
+  - sampleLengthFor16Bytes: integer (computed as Math.ceil(128 / bitsPerChar))
+  - urlSafe: boolean
+- Built-ins expected: base62, base85, printable-dense, plus any registered custom encodings.
 
 Tests
-- listEncodings returns all known encodings and correct numeric metadata.
-- sampleLengthFor16Bytes matches actual encoding length for a 16-byte buffer for each encoding.
+- listEncodings returns an array containing items for each built-in encoding and for encodings registered during tests.
+- For each encoding, sampleLengthFor16Bytes equals the actual length measured by encoding a 16-byte buffer.
 
-Acceptance criteria
-- listEncodings is implemented and exported.
-- listEncodings includes the built-in encodings with correct charsetSize and bitsPerChar.
-- Unit tests verifying metadata and sample lengths pass.
+Acceptance criteria (testable)
+- listEncodings is exported and callable.
+- Each returned metadata object includes name, charsetSize (integer), bitsPerChar (number with >=4 decimals), sampleLengthFor16Bytes (integer), urlSafe (boolean).
+- Tests assert that sampleLengthFor16Bytes === encoded.length for an actual encoded 16-byte buffer for each known encoding.

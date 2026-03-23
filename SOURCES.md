@@ -21,3 +21,10 @@ Reference material and documentation sources for this project.
 - MDN TextEncoder — TextEncoder and TextDecoder API. https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder
 - MDN BigInt — BigInt primitive, conversions, BigInt.asIntN/asUintN, BigInt64Array/BigUint64Array. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt
 - Node.js Buffer — Buffer API and utility methods for byte handling in Node. https://nodejs.org/api/buffer.html
+
+Additional sources added to cover base64 baseline, URL-safe base64, and encoding-length math:
+
+- Base64 — Wikipedia article on Base64 (variants, padding). https://en.wikipedia.org/wiki/Base64
+- MDN Base64 — MDN Glossary entry for Base64 (practical note on padding and URL-safe variant). https://developer.mozilla.org/en-US/docs/Glossary/Base64
+- base64url (npm) — base64url npm package (practical no-padding implementations). https://www.npmjs.com/package/base64url
+- Binary logarithm — definition and properties used for bits-per-character calculation. https://en.wikipedia.org/wiki/Binary_logarithm
