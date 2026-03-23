@@ -1,6 +1,8 @@
 # BASE85
 
-Status: Pending verification (merged; tests failing, see issue #72)
+Status: Merged; verification failing — see issue #72
+
+Test files: tests/unit/encodings.test.js
 
 Summary
 Implement Ascii85 (Adobe variant) encoding with optional Z85 compatibility. Provide encodeAscii85 and decodeAscii85 with options to enable or disable Adobe markers and 'z' shorthand.

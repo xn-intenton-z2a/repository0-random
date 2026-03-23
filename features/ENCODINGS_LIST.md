@@ -1,6 +1,8 @@
 # ENCODINGS_LIST
 
-Status: Pending verification (merged; tests failing, see issue #72)
+Status: Merged; verification failing — see issue #72
+
+Test files: tests/unit/encodings.test.js
 
 Summary
 Implement listEncodings() which returns an array of encoding metadata objects for all built-in and registered encodings.

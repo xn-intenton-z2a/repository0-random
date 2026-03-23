@@ -1,6 +1,8 @@
 # CUSTOM_ENCODING
 
-Status: Pending verification (merged; tests failing, see issue #72)
+Status: Merged; verification failing — see issue #72
+
+Test files: tests/unit/encodings.test.js
 
 Summary
 Add a first-class API to create custom encodings from a charset string and register them for use by encode/decode helpers.

@@ -1,6 +1,8 @@
 # README_COMPARISON
 
-Status: Pending verification (merged; tests failing, see issue #72)
+Status: Merged; verification failing — see issue #72
+
+Test files: tests/unit/encodings.test.js
 
 Summary
 Update README.md to include a comparison table showing encoded lengths for a 16-byte UUID across key encodings.

@@ -29,7 +29,7 @@ EDGE CASES AND VALIDATION
 - basE91 uses many punctuation characters; ensure text transport does not mangle these (e.g., in URLs or shells) — use safe contexts or escape appropriately.
 
 DETAILED DIGEST (excerpt)
-- basE91 homepage documents the algorithm and provides reference implementations; it is the authoritative source for the exact 91-character mapping. Retrieval date: 2026-03-22. Source: http://base91.sourceforge.net/ (~101.1 KB).
+- basE91 homepage documents the algorithm and provides reference implementations; it is the authoritative source for the exact 91-character mapping. Retrieval date: 2026-03-23. Retrieved bytes: 99771. Source: http://base91.sourceforge.net/
 
 ATTRIBUTION
 - Source: basE91 project (author pages on SourceForge). Use the project page for the canonical alphabet string and sample implementations.

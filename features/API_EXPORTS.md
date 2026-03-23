@@ -1,6 +1,8 @@
 # API_EXPORTS
 
-Status: Pending verification (merged; tests failing, see issue #72)
+Status: Merged; verification failing — see issue #72
+
+Test files: tests/unit/encodings.test.js
 
 Summary
 Ensure all public API is exported as named exports from src/lib/main.js and documented for consumers and tests.
