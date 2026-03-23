@@ -1,5 +1,7 @@
 # ENCODINGS_LIST
 
+Status: Pending verification (merged; tests failing, see issue #72)
+
 Summary
 Implement listEncodings() which returns an array of encoding metadata objects for all built-in and registered encodings.
 

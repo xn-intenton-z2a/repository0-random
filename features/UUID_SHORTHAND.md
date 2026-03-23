@@ -1,5 +1,7 @@
 # UUID_SHORTHAND
 
+Status: Pending verification (merged; tests failing, see issue #72)
+
 Summary
 Provide simple helpers to encode and decode UUID strings with the mission shorthand: strip dashes, convert to 16 bytes, optionally reverse bytes, and encode using any registered encoding.
 

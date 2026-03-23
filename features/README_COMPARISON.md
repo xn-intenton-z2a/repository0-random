@@ -1,5 +1,7 @@
 # README_COMPARISON
 
+Status: Pending verification (merged; tests failing, see issue #72)
+
 Summary
 Update README.md to include a comparison table showing encoded lengths for a 16-byte UUID across key encodings.
 

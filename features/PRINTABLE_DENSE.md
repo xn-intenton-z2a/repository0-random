@@ -1,5 +1,7 @@
 # PRINTABLE_DENSE
 
+Status: Pending verification (merged; tests failing, see issue #72)
+
 Summary
 Provide a high-density encoding using printable ASCII characters U+0021..U+007E excluding space and visually ambiguous characters (0, O, 1, l, I). This produces a charset of size 89 and maximizes bits/char for shortest output.
 

@@ -15,3 +15,5 @@ Reference material and documentation sources for this project.
 - ASCII printable — ASCII printable characters range (U+0021–U+007E). https://en.wikipedia.org/wiki/ASCII#Printable_characters
 - MDN Uint8Array — Typed array for binary data in JS. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
 - MDN TextEncoder — TextEncoder and TextDecoder API. https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder
+- MDN BigInt — BigInt primitive, conversions, BigInt.asIntN/asUintN, BigInt64Array/BigUint64Array. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt
+- Node.js Buffer — Buffer API and utility methods for byte handling in Node. https://nodejs.org/api/buffer.html

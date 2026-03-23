@@ -1,5 +1,7 @@
 # API_EXPORTS
 
+Status: Pending verification (merged; tests failing, see issue #72)
+
 Summary
 Ensure all public API is exported as named exports from src/lib/main.js and documented for consumers and tests.
 

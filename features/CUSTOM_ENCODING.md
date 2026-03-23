@@ -1,5 +1,7 @@
 # CUSTOM_ENCODING
 
+Status: Pending verification (merged; tests failing, see issue #72)
+
 Summary
 Add a first-class API to create custom encodings from a charset string and register them for use by encode/decode helpers.
 
