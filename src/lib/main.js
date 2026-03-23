@@ -42,28 +42,32 @@ export function main(args) {
 // encoding library
 const encodings = new Map();
 
-function assertUint8Array(buf) {
-  if (!(buf instanceof Uint8Array)) throw new TypeError("data must be a Uint8Array");
+function toUint8Array(data) {
+  if (data instanceof Uint8Array) return data;
+  if (ArrayBuffer.isView(data)) return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+  if (data instanceof ArrayBuffer) return new Uint8Array(data);
+  throw new TypeError('data must be a Uint8Array or ArrayBuffer or TypedArray');
 }
 
 function registerEncoding(obj) {
   if (!obj || !obj.name) throw new Error("invalid encoding object");
+  // ensure charset is a string for consistent introspection
+  if (obj.charset && Array.isArray(obj.charset)) obj.charset = obj.charset.join('');
   encodings.set(obj.name, obj);
 }
 
 function listEncodings() {
-  const out = [];
-  for (const enc of encodings.values()) {
-    out.push({ name: enc.name, bitsPerChar: enc.bitsPerChar, charsetSize: enc.charset?.length ?? null });
-  }
-  return out;
+  // return a stable, sorted list by name
+  return Array.from(encodings.values()).slice().sort((a, b) => a.name.localeCompare(b.name)).map(enc => ({ name: enc.name, bitsPerChar: enc.bitsPerChar, charsetSize: enc.charset?.length ?? null }));
 }
 
 function createEncodingFromCharset(name, charset, options = {}) {
   if (typeof name !== 'string' || name.length === 0) throw new TypeError('name must be a non-empty string');
   if (typeof charset !== 'string' || charset.length < 2) throw new TypeError('charset must be a string with length >= 2');
+
   // Validate printable and uniqueness
-  const chars = Array.from(charset);
+  const alphabet = charset;
+  const chars = Array.from(alphabet);
   const set = new Set(chars);
   if (set.size !== chars.length) throw new Error('charset contains duplicate characters');
   for (const ch of chars) {
@@ -72,20 +76,19 @@ function createEncodingFromCharset(name, charset, options = {}) {
   }
   const ambiguous = ['0','O','1','l','I'];
   if (!options.allowAmbiguous) {
-    for (const a of ambiguous) if (charset.includes(a)) throw new Error('charset contains ambiguous characters; set allowAmbiguous=true to override');
+    for (const a of ambiguous) if (alphabet.includes(a)) throw new Error('charset contains ambiguous characters; set allowAmbiguous=true to override');
   }
 
-  const base = BigInt(chars.length);
-  const bitsPerChar = Math.log2(chars.length);
+  const base = BigInt(alphabet.length);
+  const bitsPerChar = Math.log2(alphabet.length);
 
-  // encode/decode using BigInt for correctness
-  function encode(bytes) {
-    assertUint8Array(bytes);
+  function encode(input) {
+    const bytes = toUint8Array(input);
     if (bytes.length === 0) return '';
-    // count leading zeros
+    // count leading zero bytes
     let zeros = 0;
     while (zeros < bytes.length && bytes[zeros] === 0) zeros++;
-    // convert remaining bytes to BigInt
+    // convert remaining bytes to BigInt (big-endian)
     let value = 0n;
     for (let i = zeros; i < bytes.length; i++) {
       value = (value << 8n) + BigInt(bytes[i]);
@@ -93,11 +96,16 @@ function createEncodingFromCharset(name, charset, options = {}) {
     let out = '';
     while (value > 0n) {
       const rem = value % base;
-      out = chars[Number(rem)] + out;
+      out = alphabet.charAt(Number(rem)) + out;
       value = value / base;
     }
-    // leading zero chars
-    for (let i = 0; i < zeros; i++) out = chars[0] + out;
+    // If numeric value is zero, emit either a single zero-char (no leading zero bytes)
+    // or repeat the zero-char for each leading zero byte.
+    if (out.length === 0) {
+      out = (zeros === 0) ? alphabet.charAt(0) : alphabet.charAt(0).repeat(zeros);
+    } else {
+      if (zeros > 0) out = alphabet.charAt(0).repeat(zeros) + out;
+    }
     return out;
   }
 
@@ -106,15 +114,15 @@ function createEncodingFromCharset(name, charset, options = {}) {
     if (text.length === 0) return new Uint8Array(0);
     // count leading zero chars
     let zeros = 0;
-    while (zeros < text.length && text[zeros] === chars[0]) zeros++;
+    while (zeros < text.length && text[zeros] === alphabet.charAt(0)) zeros++;
     // convert text to BigInt
     let value = 0n;
     for (let i = zeros; i < text.length; i++) {
-      const idx = chars.indexOf(text[i]);
+      const idx = alphabet.indexOf(text[i]);
       if (idx === -1) throw new Error('invalid character in input');
       value = value * base + BigInt(idx);
     }
-    // convert BigInt to bytes
+    // convert BigInt to bytes (big-endian)
     const bytes = [];
     while (value > 0n) {
       bytes.push(Number(value & 0xffn));
@@ -127,7 +135,7 @@ function createEncodingFromCharset(name, charset, options = {}) {
     return out;
   }
 
-  const enc = { name, charset: chars.join(''), charsetSize: chars.length, bitsPerChar, encode, decode };
+  const enc = { name, charset: alphabet, charsetSize: alphabet.length, bitsPerChar, encode, decode };
   registerEncoding(enc);
   return enc;
 }
@@ -135,105 +143,22 @@ function createEncodingFromCharset(name, charset, options = {}) {
 // built-in charsets
 const BASE62_CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const BASE85_CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#';
-// basE91 alphabet (91 chars) - select a printable 91-character set
-const BASE91_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&()*+,./:;<=>?@[]^_`{|}~"';
-// The above assembly ensures 91 characters (constructed to avoid control chars). If length mismatches, fallback to generating 91 distinct printable chars.
-if (BASE91_CHARS.length !== 91) {
-  // build printable ASCII set and take first 91 characters excluding space
-  let s = '';
-  for (let i = 33; i <= 126 && s.length < 91; i++) {
-    s += String.fromCharCode(i);
-  }
-  // ensure uniqueness and 91 length
-  const set = Array.from(new Set(s)).slice(0, 91).join('');
-  // override
-  // eslint-disable-next-line no-unused-vars
-  var _BASE91_FINAL = set;
-}
 
-// basE91 encode/decode implementation (variable 13/14-bit packing) using BigInt to avoid 32-bit bitwise issues
-function basE91Encode(bytes) {
-  assertUint8Array(bytes);
-  const alphabet = (typeof _BASE91_FINAL !== 'undefined' ? _BASE91_FINAL : BASE91_CHARS);
-  if (bytes.length === 0) return '';
-  let b = 0n;
-  let n = 0;
-  const out = [];
-  for (let i = 0; i < bytes.length; i++) {
-    b |= BigInt(bytes[i]) << BigInt(n);
-    n += 8;
-    if (n > 13) {
-      let v = b & 8191n; // 13 bits
-      if (v > 88n) {
-        v = b & 16383n; // 14 bits
-        b >>= 14n;
-        n -= 14;
-      } else {
-        b >>= 13n;
-        n -= 13;
-      }
-      out.push(alphabet[Number(v % 91n)]);
-      out.push(alphabet[Number(v / 91n)]);
-    }
-  }
-  if (n > 0) {
-    out.push(alphabet[Number(b % 91n)]);
-    if (n > 7 || b > 90n) out.push(alphabet[Number(b / 91n)]);
-  }
-  return out.join('');
-}
-
-function basE91Decode(text) {
-  if (typeof text !== 'string') throw new TypeError('text must be a string');
-  const alphabet = (typeof _BASE91_FINAL !== 'undefined' ? _BASE91_FINAL : BASE91_CHARS);
-  if (text.length === 0) return new Uint8Array(0);
-  const indexes = new Int32Array(256).fill(-1);
-  for (let i = 0; i < alphabet.length; i++) indexes[alphabet.charCodeAt(i)] = i;
-  let v = -1n;
-  let b = 0n;
-  let n = 0;
-  const out = [];
-  for (let i = 0; i < text.length; i++) {
-    const c = text.charCodeAt(i);
-    const dv = indexes[c];
-    if (dv === -1) continue; // ignore unknown
-    if (v < 0n) v = BigInt(dv);
-    else {
-      v = v + BigInt(dv) * 91n;
-      b |= v << BigInt(n);
-      n += ((v & 8191n) > 88n) ? 14 : 13;
-      while (n >= 8) {
-        out.push(Number(b & 255n));
-        b >>= 8n;
-        n -= 8;
-      }
-      v = -1n;
-    }
-  }
-  if (v >= 0n) {
-    b |= v << BigInt(n);
-    n += ((v & 8191n) > 88n) ? 14 : 13;
-    while (n >= 8) {
-      out.push(Number(b & 255n));
-      b >>= 8n;
-      n -= 8;
-    }
-  }
-  return new Uint8Array(out);
-}
-
-// Register built-ins using base-x for base62/base85 and basE91 for base91
+// Register built-ins
 createEncodingFromCharset('base62', BASE62_CHARS, { allowAmbiguous: true });
 createEncodingFromCharset('base85', BASE85_CHARS, { allowAmbiguous: true });
-// register base91 using the generic base encoder (BigInt-based)
-createEncodingFromCharset('base91', (typeof _BASE91_FINAL !== 'undefined' ? _BASE91_FINAL : BASE91_CHARS), { allowAmbiguous: true });
+
+// Create a base91 charset programmatically (printable ASCII starting at '!')
+let base91chars = '';
+for (let i = 33; i <= 126 && base91chars.length < 91; i++) base91chars += String.fromCharCode(i);
+createEncodingFromCharset('base91', base91chars, { allowAmbiguous: true });
 
 // convenience wrappers
 function encode(encodingName, data) {
   const enc = encodings.get(encodingName);
   if (!enc) throw new Error(`unknown encoding: ${encodingName}`);
-  assertUint8Array(data);
-  return enc.encode(data);
+  const bytes = toUint8Array(data);
+  return enc.encode(bytes);
 }
 
 function decode(encodingName, text) {
@@ -255,11 +180,16 @@ function encodeUuid(uuidStr, encodingName) {
   if (!/^[0-9a-f]{32}$/.test(hex)) throw new Error('invalid uuid string');
   const bytes = new Uint8Array(16);
   for (let i = 0; i < 16; i++) bytes[i] = parseInt(hex.substr(i*2, 2), 16);
-  return encode(encodingName, bytes);
+  const encoded = encode(encodingName, bytes);
+  // UUID shorthand: reverse the encoded output for shorthand representation
+  return encoded.split('').reverse().join('');
 }
 
 function decodeUuid(encodedStr, encodingName) {
-  const bytes = decode(encodingName, encodedStr);
+  if (typeof encodedStr !== 'string') throw new TypeError('encoded uuid must be a string');
+  // reverse before decoding (shorthand reversal)
+  const rev = encodedStr.split('').reverse().join('');
+  const bytes = decode(encodingName, rev);
   if (!(bytes instanceof Uint8Array)) throw new Error('decoded value is not a byte array');
   if (bytes.length !== 16) throw new Error('decoded uuid must be 16 bytes');
   const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');

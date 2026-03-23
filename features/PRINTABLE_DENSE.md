@@ -1,28 +1,33 @@
 # PRINTABLE_DENSE
 
-Status: Merged; verification failing — see issue #72
+Status: Implemented; verification pending (CI failing — see issue #72)
 
 Test files: tests/unit/encodings.test.js
 
 Summary
-Provide a high-density encoding using printable ASCII characters U+0021..U+007E excluding space and visually ambiguous characters (0, O, 1, l, I). This produces a charset of size 89 and maximizes bits/char for shortest output.
+A high-density encoding that uses printable ASCII characters U+0021..U+007E (excludes space) while removing visually ambiguous characters (0, O, 1, l, I) by default. This maximizes bits/char while keeping output printable and human-safe.
 
-Motivation
-A dense printable encoding is required to exceed base64 density and obtain UUID representations shorter than 22 characters.
+Charset rules
+- Base set: all printable ASCII characters from '!' (U+0021) through '~' (U+007E), inclusive (94 characters).
+- Exclude by default: space (U+0020) and ambiguous characters [ '0', 'O', '1', 'l', 'I' ] for a final charsetSize = 89.
+- Options: allowSpace (boolean), allowAmbiguous (boolean) to relax restrictions when explicitly requested.
 
 Behavior
-- Charset: all printable ASCII characters from '!' through '~', excluding space and the ambiguous characters 0, O, 1, l, I.
-- Use big-integer division algorithm (base-x style) for arbitrary base support and to preserve leading zeros.
-- Registerable name: printable-dense
-- Exposed functions: encodePrintableDense(data: Uint8Array) -> string; decodePrintableDense(text: string) -> Uint8Array
+- Use a general base-x algorithm that preserves leading zeros and supports arbitrary charset sizes.
+- Registered name: "printable-dense"
+- Exposed helpers: encodePrintableDense(data: Uint8Array) -> string; decodePrintableDense(text: string) -> Uint8Array
+
+Numeric properties
+- charsetSize: 89 (default)
+- bitsPerChar: ≈ 6.4760 (compute in code, 4+ decimal places)
+- Expected encoded length for a 16-byte UUID: 20 (assert length === 20)
 
 Tests
-- Round-trip tests on random and edge-case inputs.
-- Verify that the reported charsetSize is 89 and bitsPerChar ≈ 6.476.
-- Verify encoded 16-byte UUID length is 20 characters (ceil(128 / bitsPerChar) == 20).
+- Round-trip encode/decode for random and edge-case buffers.
+- Assert listEncodings reports charsetSize=89 and bitsPerChar close to 6.4760.
+- Known 16-byte UUID encodes to a 20-character string under default options.
 
-Acceptance criteria
-- Implementation provides lossless encode/decode for arbitrary Uint8Array.
-- listEncodings reports printable-dense with charsetSize = 89 and bitsPerChar ≈ 6.476.
-- The densest encoding in the library produces fewer than 22 characters for a 16-byte UUID (expected 20).
-- Unit tests covering the above pass.
+Acceptance criteria (testable)
+- encodePrintableDense and decodePrintableDense are exported and callable.
+- listEncodings includes printable-dense with charsetSize === 89 and bitsPerChar within 1e-4 of 6.4760.
+- Encoding a canonical 16-byte UUID with default options yields a 20-character string and decodes back correctly.

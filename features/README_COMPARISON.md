@@ -1,25 +1,25 @@
 # README_COMPARISON
 
-Status: Merged; verification failing — see issue #72
+Status: Implemented; verification pending (CI failing — see issue #72)
 
 Test files: tests/unit/encodings.test.js
 
 Summary
-Update README.md to include a comparison table showing encoded lengths for a 16-byte UUID across key encodings.
+Update the repository README (README.md) with an explicit comparison table showing expected encoded lengths for a 16-byte UUID across key encodings and the formula used to compute expected lengths.
 
-Motivation
-Visible, reproducible evidence of encoding density is required by the mission and helps users choose an encoding.
-
-Table contents
+Table requirements
 - Columns: Encoding, Charset size, Bits per char, Expected length for 16-byte UUID, Notes
+- Row computation: Expected length = Math.ceil(128 / bitsPerChar)
 - Rows to include at minimum:
-  - Hex (baseline): charsetSize 16, bitsPerChar 4.0, Expected length 32, Notes: canonical hex with dashes stripped is 32 chars
-  - base64 (no padding): 64, 6.0, Expected length 22, Notes: baseline comparison
-  - base62: 62, ≈5.954, Expected length 22
-  - base85: 85, ≈6.4105, Expected length 20
-  - printable-dense: 89, ≈6.476, Expected length 20, Notes: excludes ambiguous characters
-- Add a short note explaining how expected lengths are computed: ceil(128 / bitsPerChar).
+  - hex (baseline): charsetSize=16, bitsPerChar=4.0000, expected length=32
+  - base64 (no padding): charsetSize=64, bitsPerChar=6.0000, expected length=22
+  - base62: charsetSize=62, bitsPerChar≈5.9542, expected length=22
+  - base85: charsetSize=85, bitsPerChar≈6.4094, expected length=20
+  - printable-dense: charsetSize=89, bitsPerChar≈6.4760, expected length=20
 
-Acceptance criteria
-- README.md is updated with the comparison table.
-- The table rows match actual results produced by unit tests for the encodings implemented in the library.
+Tests and verification
+- The unit test suite must compute actual encoded lengths for a canonical 16-byte UUID and assert they match the Expected length column for each encoding implemented.
+
+Acceptance criteria (testable)
+- README.md contains a comparison table matching the above rows and computation method.
+- tests/unit/encodings.test.js includes assertions that actual encoded lengths equal the table values for the implemented encodings.

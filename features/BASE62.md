@@ -1,33 +1,32 @@
 # BASE62
 
-Status: Merged; verification failing — see issue #72
+Status: Implemented; verification pending (CI failing — see issue #72)
 
 Test files: tests/unit/encodings.test.js
 
 Summary
-Implement a standard Base62 encoding using the alphabet 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ and base-x long-division semantics.
-
-Motivation
-Base62 is a required built-in encoding that is URL-safe and provides ~5.95 bits per character; target representation for a 16-byte UUID is 22 characters.
+Provide a canonical base62 encoding using the alphabet 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ. Implementation must be lossless, deterministic, and operate on Uint8Array input.
 
 Behavior
-- Provide lossless encode and decode operations accepting and returning Uint8Array and string respectively.
-- Preserve leading zeros using leader-character rules compatible with base-x implementations.
-- Must not emit control characters and must be deterministic.
-- No padding characters.
+- Encode and decode operate on Uint8Array/string.
+- Preserve leading zeros when encoding/decoding (base-x long division semantics).
+- No padding characters; URL-safe.
 
 API
-- Registerable name: base62
-- Exposed functions: encodeBase62(data: Uint8Array) -> string; decodeBase62(text: string) -> Uint8Array
-- The library should also support createEncodingFromCharset('base62', charset) to register the canonical alphabet.
+- Registered name: "base62"
+- Exposed helpers: encodeBase62(data: Uint8Array) -> string; decodeBase62(text: string) -> Uint8Array
+
+Numeric properties
+- charsetSize: 62
+- bitsPerChar: ≈ 5.9542 (use computed value in code with at least 4 decimal places)
+- Expected encoded length for a 16-byte UUID: 22 (assert length === 22 in tests)
 
 Tests
-- Round-trip equality for random inputs and edge cases: empty buffer, single byte, all-zero bytes, all-0xFF bytes.
-- UUID length test: encoding the 16-byte UUID buffer must produce exactly 22 characters.
-- Include property test that decodeBase62(encodeBase62(x)) deep-equals original buffer for many random samples.
+- Round-trip equality: decodeBase62(encodeBase62(buf)) deep-equals buf for random buffers and edge cases: empty, single-byte, all-0x00, all-0xFF.
+- UUID length test: encoding a 16-byte UUID buffer produces exactly 22 characters.
 
-Acceptance criteria
-- encodeBase62 and decodeBase62 are implemented and exported.
-- All unit tests for edge cases and round-trip pass.
-- listEncodings includes an entry with name base62, charsetSize = 62 and bitsPerChar ≈ 5.9542.
-- UUID test shows encoded length = 22.
+Acceptance criteria (testable)
+- encodeBase62 and decodeBase62 are exported and callable.
+- Round-trip tests for random and edge-case buffers pass.
+- A deterministic assertion verifies encoding of a known 16-byte UUID buffer yields a 22-character string.
+- listEncodings() includes an entry { name: 'base62', charsetSize: 62, bitsPerChar: closeTo(5.9542, 1e-4) }.
