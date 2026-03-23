@@ -1,35 +1,36 @@
 # Mission
 
-A JavaScript library that simulates a lunar lander descent and provides an autopilot controller.
-
-## Physics Model (1D simplified)
-
-- Initial altitude: 1000m, initial velocity: 40 m/s (toward surface), fuel: 25 units
-- Gravity: adds 2 m/s per tick to velocity (increasing downward speed)
-- Thrust: each fuel unit burned reduces velocity by 4 m/s
-- Landing: altitude reaches 0. Safe if velocity ≤ 4 m/s, crash if > 4 m/s
+A JavaScript library of string utility functions. This is a bag-of-functions problem — each function is independent.
 
 ## Required Capabilities
 
-- Create a lander state with configurable initial conditions (altitude, velocity, fuel). Defaults to the values above.
-- Advance one tick: burn thrust fuel (clamped to available fuel), apply gravity and thrust, return a new immutable state. State objects are plain objects: `{ altitude, velocity, fuel, tick, landed, crashed }`.
-- Simulate to completion using a controller function `(state) => thrustUnits` and return the full trace (array of states).
-- Provide a built-in autopilot controller that lands safely. This is the algorithmically interesting part.
-- Score a landing: `0` for crash, otherwise `(initialFuel - fuelUsed) * 10 + Math.max(0, (4 - landingVelocity) * 25)`. Higher is better.
+The library must provide these 10 string operations, exported as named functions from `src/lib/main.js`:
+
+- **Slugify** — convert to URL-friendly slug (lowercase, hyphens, strip non-alphanumeric)
+- **Truncate** — truncate with suffix (default "…"), don't break mid-word
+- **camelCase** — convert to camelCase
+- **kebabCase** — convert to kebab-case
+- **titleCase** — capitalise first letter of each word
+- **wordWrap** — soft wrap text at word boundaries. Never break a word. If a single word exceeds `width`, place it on its own line unbroken. Line separator is `\n`.
+- **stripHtml** — remove HTML tags, decode common entities
+- **escapeRegex** — escape special regex characters
+- **Pluralize** — basic English pluralisation. Rules: words ending in s/x/z/ch/sh add "es"; consonant+"y" changes to "ies"; "f"/"fe" changes to "ves"; all others add "s". Irregular plurals (mouse/mice, child/children) are out of scope.
+- **Levenshtein distance** — compute edit distance between two strings
 
 ## Requirements
 
-- The autopilot must land safely across a range of initial conditions: altitude 500–2000m, velocity 20–80 m/s, fuel 10–50 units. Some combinations are physically impossible to survive (e.g. velocity 80 m/s with fuel 10) — the autopilot should return a crash trace, not throw.
-- Export all public API as named exports from `src/lib/main.js`.
-- Comprehensive unit tests including physics correctness, autopilot safety across parameter ranges, and edge cases (zero fuel, already landed).
-- README with example simulation output showing a successful landing trace.
+- Handle edge cases: empty strings, null/undefined (return empty string), Unicode characters.
+- No external runtime dependencies.
+- Comprehensive unit tests for each function including edge cases.
+- README with usage examples for each function.
 
 ## Acceptance Criteria
 
-- [ ] Stepping correctly applies gravity and thrust physics
-- [ ] Autopilot lands safely with default initial conditions
-- [ ] Autopilot lands safely across at least 10 different (altitude, velocity, fuel) combinations
-- [ ] Scoring returns 0 for crashes, positive for safe landings using the formula `(initialFuel - fuelUsed) * 10 + Math.max(0, (4 - landingVelocity) * 25)`
-- [ ] Simulation returns a complete trace from start to landing
+- [ ] All 10 functions are exported and work correctly
+- [ ] Slugifying `"Hello World!"` produces `"hello-world"`
+- [ ] Truncating `"Hello World"` to length 8 produces `"Hello…"`
+- [ ] camelCase of `"foo-bar-baz"` produces `"fooBarBaz"`
+- [ ] Levenshtein distance between `"kitten"` and `"sitting"` is `3`
+- [ ] Edge cases (empty string, null, Unicode) handled gracefully
 - [ ] All unit tests pass
-- [ ] README shows example simulation output
+- [ ] README documents all functions with examples

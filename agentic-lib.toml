@@ -6,7 +6,7 @@
 # During init:
 
 [schedule]
-supervisor = "off"       # off | weekly | daily | hourly | continuous
+supervisor = "hourly"       # off | weekly | daily | hourly | continuous
 focus = "mission"                 # mission | maintenance
 
 [paths]
@@ -93,7 +93,7 @@ review-issues-cap = 2                  # max issues reviewed per batch (conserva
 min-resolved-issues = 1                # mission-complete: minimum closed-as-RESOLVED issues
 min-cumulative-transforms = 1          # mission-complete: minimum transform cycles
 max-source-todos = 1                   # mission-complete: max TODO comments in src
-acceptance-criteria-threshold = 40     # mission-complete: % acceptance criteria required
+acceptance-criteria-threshold = 50     # mission-complete: % acceptance criteria required
 
 [profiles.med]
 reasoning-effort = "high"            # low | medium | high | none
@@ -170,18 +170,19 @@ screenshot-file = "SCREENSHOT_INDEX.png"
 
 [acceptance-criteria]
 # Auto-generated from MISSION.md on init. Updated by implementation-review.
-total = 7
-1 = { text = "Stepping correctly applies gravity and thrust physics", met = false }
-2 = { text = "Autopilot lands safely with default initial conditions", met = false }
-3 = { text = "Autopilot lands safely across at least 10 different (altitude, velocity, fuel) combinations", met = false }
-4 = { text = "Scoring returns 0 for crashes, positive for safe landings using the formula `(initialFuel - fuelUsed) * 10 + Math.max(0, (4 - landingVelocity) * 25)`", met = false }
-5 = { text = "Simulation returns a complete trace from start to landing", met = false }
-6 = { text = "All unit tests pass", met = false }
-7 = { text = "README shows example simulation output", met = false }
+total = 8
+1 = { text = "All 10 functions are exported and work correctly", met = false }
+2 = { text = "Slugifying `\"Hello World!\"` produces `\"hello-world\"`", met = false }
+3 = { text = "Truncating `\"Hello World\"` to length 8 produces `\"Hello…\"`", met = false }
+4 = { text = "camelCase of `\"foo-bar-baz\"` produces `\"fooBarBaz\"`", met = false }
+5 = { text = "Levenshtein distance between `\"kitten\"` and `\"sitting\"` is `3`", met = false }
+6 = { text = "Edge cases (empty string, null, Unicode) handled gracefully", met = false }
+7 = { text = "All unit tests pass", met = false }
+8 = { text = "README documents all functions with examples", met = false }
 
 [init]
-timestamp = "2026-03-23T09:14:06.964Z"
+timestamp = "2026-03-23T09:16:34.808Z"
 mode = "purge"
-mission = "3-kyu-analyze-lunar-lander"
+mission = "5-kyu-apply-string-utils"
 mission-type = "random"
 version = "7.4.58"
