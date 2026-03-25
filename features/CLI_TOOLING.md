@@ -4,20 +4,20 @@ Summary
 A user-friendly command line interface for generating plots from expressions or CSV time series with clear flags and a help screen.
 
 Specification
-- Flags supported:
-  --expression <expr> where expr is an expression like y=Math.sin(x)
-  --range <start:step:end> where start, step, end are numbers
-  --csv <path> path to a CSV time series file with time,value
+- Supported flags:
+  --expression <expression> where expression is a mathematical expression using x and Math functions, for example y=Math.sin(x)
+  --range <start:step:end> where start, step, end are decimal numbers
+  --csv <path> path to a CSV time series file with header columns time and value
   --file <path> output path; extension determines svg or png
-  --help prints usage and examples and exits
-- Behavior: Validate flags, produce helpful error messages for invalid inputs, and compose library functions to produce and save the requested plot.
-- Output: Exit code 0 on success, non-zero on error.
+  --help prints usage and examples and exits with status 0
+- Behavior: Validate flags, print helpful errors for invalid inputs, and call library APIs to produce and save the requested plot.
+- API: Expose a named export runCli that accepts an argv array for programmatic tests.
 
 Acceptance Criteria
-- Running node src/lib/main.js --help prints a usage summary and example invocations.
-- Running the CLI with --expression "y=Math.sin(x)" --range "-3.14:0.01:3.14" --file output.svg produces an output.svg file containing SVG markup and a polyline.
-- Running the CLI with --csv data.csv --file output.png produces a valid PNG file starting with PNG magic bytes.
-- Invalid flag combinations produce a helpful error and non-zero exit code.
+- Running node src/lib/main.js --help prints a usage summary containing the flag names and exits with status 0.
+- Running node src/lib/main.js --expression y=Math.sin(x) --range -3.14:0.01:3.14 --file output.svg produces output.svg that contains an SVG polyline and a viewBox attribute.
+- Running node src/lib/main.js --csv data.csv --file output.png produces output.png whose first eight bytes match the PNG signature.
+- Invalid flag combinations or missing required arguments produce a non-zero exit code and a clear error message on stderr.
 
 Implementation Notes
-- Keep CLI code minimal and testable; expose a runCli function as a named export so tests can invoke CLI logic programmatically.
+- Keep CLI wiring thin and testable; tests should call runCli programmatically to assert behavior without spawning a child process when possible.

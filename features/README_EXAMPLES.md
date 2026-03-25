@@ -1,19 +1,19 @@
 # README_EXAMPLES
 
 Summary
-Document CLI usage, optional dependencies for PNG rendering, and sample output expectations so users can quickly get started.
+Provide short, actionable examples for CLI usage and a note on how PNG support is enabled.
 
 Specification
-- Include examples for:
-  expression-based plot: node src/lib/main.js --expression "y=Math.sin(x)" --range "-3.14:0.01:3.14" --file output.svg
+- Examples included:
+  Expression-based plot: node src/lib/main.js --expression y=Math.sin(x) --range -3.14:0.01:3.14 --file output.svg
   CSV-based plot: node src/lib/main.js --csv data.csv --file output.png
-- Describe the approach used to convert SVG to PNG and list the optional packages with install commands.
-- Link to the public API exports and show a minimal programmatic example.
+- Describe PNG renderer options and how to enable them by installing a package such as sharp or canvas: npm install sharp
+- Link to the library API exports and indicate that programmatic usage is supported by importing named exports from src/lib/main.js.
 
 Acceptance Criteria
-- README contains at least the two example CLI commands and explains how to get PNG support by installing sharp or canvas.
-- README states that SVG output uses a polyline and viewBox and that PNG output starts with PNG magic bytes.
-- README references the named exports in src/lib/main.js and suggests a minimal programmatic example.
+- README contains the two example CLI commands above and describes that PNG support requires installing an optional package.
+- README states that SVG output uses a polyline and viewBox and that PNG output begins with the PNG signature bytes.
+- README references the named exports parseExpression, evaluateRange, renderSvg, renderPng, loadCsvTimeSeries, saveToFile, and runCli.
 
 Implementation Notes
-- Keep examples short and actionable; point to the tests for precise expectations.
+- Keep examples minimal and direct users to tests for precise expected output values.
