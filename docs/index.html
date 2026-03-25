@@ -1,48 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>repository0</title>
-  <meta property="og:title" content="repository0">
-  <meta property="og:description" content="An autonomous repository powered by agentic-lib">
-  <meta property="og:type" content="website">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>repository0 — Plot Demo</title>
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 1000px; margin: 0 auto; padding: 2rem; color: #333; }
     h1 { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
-    a { color: #0366d6; }
-    .identity { background: #f6f8fa; padding: 1rem; border-radius: 6px; margin: 1rem 0; font-family: monospace; }
-    .identity dt { font-weight: bold; color: #666; }
-    .identity dd { margin: 0 0 0.5rem 0; font-size: 1.1rem; }
-    #demo-output { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 6px; font-family: monospace; white-space: pre-wrap; min-height: 2rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .panel { background: #f6f8fa; padding: 1rem; border-radius: 6px; }
+    #demo-output { background: #fff; padding: 1rem; border-radius: 6px; white-space: pre-wrap; }
+    svg { max-width: 100%; height: auto; display: block; }
   </style>
 </head>
 <body>
   <h1 id="lib-name">repository0</h1>
-  <div class="identity">
-    <dl>
-      <dt>Version</dt>
-      <dd id="lib-version">loading...</dd>
-      <dt>Description</dt>
-      <dd id="lib-description">loading...</dd>
-    </dl>
+  <p id="lib-version">loading...</p>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>Expression Demo</h2>
+      <p>Parse and render y = sin(x) over -3.14:0.01:3.14</p>
+      <div id="plot-area">Rendering...</div>
+    </div>
+    <div class="panel">
+      <h2>Identity</h2>
+      <div id="demo-output">Loading...</div>
+    </div>
   </div>
-  <h2>Output</h2>
-  <div id="demo-output">Loading library...</div>
-  <h2>About</h2>
-  <p>This website uses the library. See <a href="https://github.com/xn-intenton-z2a/repository0">the repository</a> for source code and mission details.</p>
+
   <script type="module">
     try {
-      const { name, version, description } = await import('./lib.js');
-      document.getElementById('lib-name').textContent = name;
-      document.getElementById('lib-version').textContent = version;
-      document.getElementById('lib-description').textContent = description || '(no description)';
-      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, description }, null, 2);
-      document.title = name + ' v' + version;
+      const lib = await import('./lib.js');
+      document.getElementById('lib-name').textContent = lib.name;
+      document.getElementById('lib-version').textContent = `v${lib.version} — ${lib.description || '(no description)'}`;
+
+      const fn = lib.parseExpression('y=Math.sin(x)');
+      const { start, step, end } = lib.parseRange('-3.14:0.01:3.14');
+      const series = lib.evaluateRange(fn, start, step, end);
+      const svg = lib.renderSVG(series, { width: 720, height: 240, stroke: '#007acc' });
+      const plotArea = document.getElementById('plot-area');
+      plotArea.innerHTML = svg;
+
+      document.getElementById('demo-output').textContent = JSON.stringify(lib.getIdentity(), null, 2);
     } catch (e) {
-      document.getElementById('lib-version').textContent = '(error)';
-      document.getElementById('lib-description').textContent = e.message;
-      document.getElementById('demo-output').textContent = 'Failed to load library: ' + e.message;
+      document.getElementById('plot-area').textContent = 'Failed to load demo: ' + e.message;
     }
   </script>
 </body>
