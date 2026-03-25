@@ -1,0 +1,120 @@
+# SPDX-License-Identifier: MIT
+# Copyright (C) 2025-2026 Polycode Limited
+# .github/workflows/repository0-init.yml
+#
+# Standalone init trigger — NOT managed by agentic-lib init/purge.
+# Maintains its own schedule and can reset the repository regardless of state.
+# Pass-through to agentic-lib-init.yml — all defaults handled by the called workflow.
+
+name: repository0-init
+run-name: "repository0-init ${{ inputs.mode || 'purge' }} [${{ github.ref_name }}]"
+
+on:
+  schedule:
+    - cron: "20 16 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Init mode"
+        type: choice
+        required: false
+        default: "purge"
+        options:
+          - purge
+          - reseed
+          - update
+      dry-run:
+        description: "Preview changes without writing files"
+        type: boolean
+        required: false
+        default: false
+      mission-seed:
+        description: "Mission seed name (purge only)"
+        type: choice
+        required: false
+        default: "7-kyu-understand-fizz-buzz"
+        options:
+          - random
+          - 8-kyu-remember-empty
+          - 8-kyu-remember-hello-world
+          - 7-kyu-understand-fizz-buzz
+          - 6-kyu-understand-hamming-distance
+          - 6-kyu-understand-roman-numerals
+          - 5-kyu-apply-ascii-face
+          - 5-kyu-apply-string-utils
+          - 4-kyu-apply-cron-engine
+          - 4-kyu-apply-dense-encoding
+          - 4-kyu-analyze-json-schema-diff
+          - 4-kyu-apply-owl-ontology
+          - 3-kyu-analyze-lunar-lander
+          - 3-kyu-evaluate-time-series-lab
+          - 2-kyu-create-markdown-compiler
+          - 2-kyu-create-plot-code-lib
+          - 1-kyu-create-ray-tracer
+          - 1-dan-create-c64-emulator
+          - 1-dan-create-planning-engine
+          - 2-dan-create-self-hosted
+      mission-text:
+        description: "Freeform mission text for MISSION.md (overrides mission-seed if provided)"
+        type: string
+        required: false
+        default: ""
+      schedule:
+        description: "Supervisor schedule (leave empty to keep current)"
+        type: choice
+        required: false
+        default: ""
+        options:
+          - ""
+          - "off"
+          - "weekly"
+          - "daily"
+          - "hourly"
+          - "continuous"
+      model:
+        description: "Copilot SDK model for LLM requests (leave empty to keep current)"
+        type: choice
+        required: false
+        default: ""
+        options:
+          - ""
+          - gpt-5-mini
+          - claude-sonnet-4
+          - gpt-4.1
+      profile:
+        description: "Tuning profile (leave empty to keep current)"
+        type: choice
+        required: false
+        default: ""
+        options:
+          - ""
+          - min
+          - med
+          - max
+      create-seed-issues:
+        description: "Create initial seed issues after purge"
+        type: boolean
+        required: false
+        default: false
+      run-workflow:
+        description: "Dispatch agentic-lib-workflow after init completes"
+        type: boolean
+        required: false
+        default: true
+
+permissions: write-all
+
+jobs:
+  init:
+    uses: ./.github/workflows/agentic-lib-init.yml
+    with:
+      mode: ${{ inputs.mode }}
+      dry-run: ${{ inputs.dry-run && 'true' || 'false' }}
+      mission-seed: ${{ inputs.mission-seed }}
+      mission-text: ${{ inputs.mission-text }}
+      schedule: ${{ inputs.schedule }}
+      model: ${{ inputs.model }}
+      profile: ${{ inputs.profile }}
+      create-seed-issues: ${{ inputs.create-seed-issues && 'true' || 'false' }}
+      run-workflow: ${{ inputs.run-workflow && 'true' || 'false' }}
+    secrets: inherit
