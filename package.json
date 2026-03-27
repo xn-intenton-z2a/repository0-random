@@ -1,7 +1,7 @@
 {
   "name": "repo",
   "version": "0.1.0",
-  "description": "",
+  "description": "JSON Schema diff demo library",
   "type": "module",
   "main": "src/lib/main.js",
   "scripts": {
@@ -16,9 +16,7 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "@xn-intenton-z2a/agentic-lib": "^7.4.59"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@playwright/test": "^1.58.0",
     "@vitest/coverage-v8": "^4.0.18",
