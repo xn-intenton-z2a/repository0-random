@@ -1,41 +1,34 @@
+SCHEMA_STRUCTURING
+
 NORMALISED EXTRACT
 
-Table of contents:
-- Reuse patterns and placement of reusable subschemas
-- $ref usage and replacement semantics
-- Combining schemas and recommended matching strategy
-- Practical structuring rules for large schemas
-- Normalization guidance before diffing
+Table of contents
+1. Modules and reuse ($id, $ref, definitions)
+2. Best-practice structuring patterns
+3. Scope and resolution order for $id and $ref
+4. Practical advice for author's schemas
 
-Reuse patterns and placement
-- Keep reusable definitions under a single top-level key (traditionally definitions or components). Example canonical form: definitions: { Name: <schema> }.
-- Reference reusable subschemas via JSON Pointer fragments: $ref: "#/definitions/Name".
-- Prefer local references (same document) for deterministic resolution; remote references complicate deterministic diffing and are out of scope.
+Modules and reuse
+- Use definitions (or components) to keep reusable subschemas in one place and reference them with $ref using JSON Pointers (local) or URIs (remote, out-of-scope here).
+- $id may be used to define a base URI for subschemas. For the purposes of local resolution in a single document, a well-placed $id changes the base for subsequent relative refs; however the mission restricts resolution to local JSON Pointer fragments only.
 
-$ref usage and replacement semantics
-- $ref is a URI reference. When the reference is local (fragment-only) resolve it to the target schema node and replace the $ref node with the target for validation and for diffing.
-- Do not attempt to merge sibling keywords present alongside $ref with the resolved schema; treat the resolved schema as replacing the location containing $ref.
+Best-practice patterns
+- Keep definitions under a top-level "definitions" (or "$defs" in newer drafts) object and reference with "#/definitions/Name".
+- Keep property-level schemas small and prefer referencing named definitions for complex structures.
+- Avoid mixing local and remote $ref styles if the toolchain must operate offline.
 
-Combining schemas and matching
-- For allOf: require all subschemas to validate; for diffing compare corresponding subschemas by best-effort structural equality or by index if schemas are positional.
-- For anyOf/oneOf: attempt to pair subschemas by structure; unmatched subschemas are considered added/removed and produce nested-changed records.
-- Avoid flattening combinations unless explicit normalization is applied; preserve their structure so change records reflect original schema layout.
+Scope and resolution order (notes for implementers)
+- When resolving references in an authoring environment, the nearest enclosing $id may establish a base URI for relative references; but for local fragment-only $ref resolution, treat the document root as the target base for JSON Pointers.
 
-Practical rules
-- Make 'properties', 'definitions', 'patternProperties' explicit empty objects when absent to simplify traversal.
-- Keep definitions shallow and named when reuse is intended; deep anonymous inline schemas impede reuse and increase diff noise.
-- When refactoring a schema to reduce duplication, prefer replacing repeated inline schemas with $ref to a single definition to keep diffs smaller in the future.
-
-Normalization guidance before diffing
-- Run resolveLocalRefs to inline or canonicalize refs according to policy (inline deep-clone or preserve identity for cycles).
-- Normalize type to array form and ensure required is an array.
-- Canonicalize default-semantic fields: absent properties -> {}, absent required -> [].
+SUPPLEMENTARY DETAILS
+- For the diff engine: adopt a pre-processing step that expands local $ref (fragment-only) and inlines referenced subschemas; document root is the resolution root.
+- Keep a map of definition pointers to node locations to speed resolution during pre-walk.
 
 DETAILED DIGEST
-Source: https://json-schema.org/understanding-json-schema/structuring.html
-Retrieved: 2026-03-27
-Bytes obtained: 6407 (partial HTML capture)
-Extracted: guidance and recommendations for modular schema design, reuse via definitions and $ref, and best practices for organizing large JSON Schemas. Use these to shape normalization and diff noise-reduction strategies.
+- Source: Understanding JSON Schema — Structuring (retrieved 2026-03-27)
+- Retrieved date: 2026-03-27
+- Data obtained during crawl: structuring page (~424.3 KB)
 
 ATTRIBUTION
-JSON Schema - Understanding JSON Schema (structuring). Data harvested: 6407 bytes (partial capture).
+- URL: https://json-schema.org/understanding-json-schema/structuring.html
+- Data size (crawl result): ~424.3 KB

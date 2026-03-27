@@ -1,45 +1,48 @@
+JSON_REF
+
 NORMALISED EXTRACT
 
-Table of contents:
-- $ref allowed forms and mission constraint (local-only)
-- Local resolution algorithm (JSON Pointer-based)
-- Replacement semantics when inlining
-- Cycle detection and recommended policy
-- Dereference API signatures
+Table of contents
+1. $ref semantics (Draft-07)
+2. Local $ref resolution (JSON Pointer fragment semantics)
+3. Resolution rules and replacement behavior
+4. Error handling (remote refs, missing targets, cycles)
 
-$ref allowed forms and mission constraint
-- $ref is a string representing a URI reference. For this project, only local references (fragment-only, i.e., strings beginning with '#') are supported. Any $ref not starting with '#' must cause the resolver to throw an UnsupportedRefError; remote fetching is out of scope.
+$key points
+- The $ref keyword's value is a URI-reference. If the reference contains a fragment (the portion after '#'), the fragment is a JSON Pointer that selects a location within the target document.
+- For this project only local $ref (fragment-only references that begin with '#') are in-scope. Encountering a non-fragment $ref (a reference with a scheme, host, or path) must be treated as an error and cause the diff engine to throw RemoteRefError.
+- Semantics: a schema object whose only purpose is a $ref is considered a reference and, for validation, is replaced by the target schema. For resolution before diffing, implementations should replace the $ref node with a deep-copy of the resolved subschema.
 
-Local resolution algorithm (implementation-ready):
-1. Validate $ref is a string; if not, throw.
-2. If $ref does not start with '#', throw UnsupportedRefError.
-3. pointerText = $ref.substring(1). If pointerText is non-empty, percent-decode pointerText using UTF-8 percent-decoding.
-4. If pointerText is empty, resolvedNode = rootSchema.
-5. Else split pointerText on '/' into tokens; ignore the leading empty token from the initial '/'. For each token apply tilde-unescape: replace '~1' with '/' then '~0' with '~'.
-6. Traverse the root schema using tokens: for object nodes, use token as key; for array nodes, parse token as integer index. If any step fails, throw RefNotFound.
-7. Return deep-cloned resolvedNode (unless cycle policy preserves identity).
+Local $ref resolution steps (implementation)
+1. Ensure $ref is a string. If it does not start with '#', throw RemoteRefError.
+2. Extract fragment after '#'. If fragment is empty ("#" or "#"+empty) then target is the document root.
+3. Pass the fragment (drop optional leading '/') as a JSON Pointer to resolve against the document root using resolvePointer(document, fragment).
+4. If resolution succeeds, return a deep-cloned subschema; if it fails, throw PointerNotFoundError.
+5. Track visited reference paths (set of pointer strings) during recursive resolution; if a pointer is seen twice on the same resolution stack, throw CircularRefError.
 
-Replacement semantics
-- The resolved schema node replaces the $ref node entirely; do not merge sibling keywords with the resolved target for evaluation.
-- When inlining, perform deep clones of resolved nodes to prevent accidental shared mutation unless using identity-preserving cycle handling.
+Merging and other keywords
+- When a $ref is present in a schema object, per the specification the $ref acts as a complete replacement for that node. Do not attempt to merge sibling keywords with the referenced schema; treat siblings as inert for resolution.
 
-Cycle detection and policy
-- Maintain a map of in-progress resolution paths during inlining. If a resolution attempts to re-resolve a path already in progress, a cycle exists. Recommended policies:
-  - Preserve identity: when detecting a cycle, insert a reference pointer object that preserves identity instead of deep-cloning to avoid infinite recursion; or
-  - Throw on cycle: detect and surface a clear CycleError if cycles are not supported.
+SUPPLEMENTARY DETAILS
+- Implementation pattern: prewalk the schema, detect $ref nodes, replace them with the resolved subschema, and continue walking the replaced content recursively until no local $ref remain.
+- To avoid mutating the original input, construct a new schema object and copy-resolve nodes into it. Use a visited map keyed by JSON Pointer to detect cycles.
 
-Dereference API signatures (exact):
-- resolveLocalRef(schema: object, ref: string): object | boolean
-    - Throws UnsupportedRefError if ref is not local.
-    - Throws RefNotFound if pointer path cannot be navigated.
-    - Returns a deep clone of the referenced schema node.
-- dereferenceSchema(schema: object): object
-    - Walks the input schema and replaces all local $ref nodes with resolved nodes. Must preserve boolean schemas and handle cycles as per policy.
+REFERENCE DETAILS (API)
+- resolveLocalRef(rootSchema: Object, ref: string) -> Object
+  - Parameters: rootSchema: the top-level schema document; ref: a $ref string beginning with '#'.
+  - Returns: deep-cloned subschema object
+  - Throws: RemoteRefError (if ref is not fragment-only), PointerNotFoundError, CircularRefError
+- expandLocalRefs(schema: Object) -> Object
+  - Parameters: schema: the schema (may be the root or a subschema)
+  - Returns: a new schema object with all local $ref replaced inline
+  - Behavior: throws on any non-fragment $ref encountered
 
 DETAILED DIGEST
-Primary evidence: Draft-07 meta-schema declares $ref as type string with format uri-reference; pointer semantics must follow RFC 6901. Ajv user-guide page for refs attempted but returned 404 during crawl. Use meta-schema + RFC 6901 rules to implement deterministic local-only ref resolution.
-Retrieved: 2026-03-27
-Meta-schema bytes: 4979; RFC 6901 bytes: 4772; Ajv guide attempted: 404 Not Found.
+- Sources: JSON Schema "Structuring" and AJV refs guide (retrieved 2026-03-27)
+- Retrieved date: 2026-03-27
+- Data obtained during crawl: structuring page (~424.3 KB), AJV refs guide (HTML, inline retrieval)
 
 ATTRIBUTION
-Primary sources: json-schema.org (Draft-07 meta-schema) and RFC 6901 (JSON Pointer). Ajv guide fetch failed (404) during crawl.
+- Understanding JSON Schema — Structuring: https://json-schema.org/understanding-json-schema/structuring.html
+- Ajv ref handling guide: https://ajv.js.org/guide/refs.html
+- Note: this document codifies local-only resolution rules for the mission; remote $ref must cause an explicit error in the diff engine.

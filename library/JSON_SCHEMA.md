@@ -1,69 +1,60 @@
+JSON_SCHEMA
+
 NORMALISED EXTRACT
 
-Table of contents:
-- Meta-schema shape and top-level schema types
-- Core validation keywords and their value types
-- Object keywords: properties, required, additionalProperties, patternProperties, dependencies
-- Array keywords: items, additionalItems, contains, uniqueItems, maxItems/minItems
-- Combining keywords: allOf, anyOf, oneOf, not, if/then/else
-- Reference and resolution: $ref, $id, $schema
+Table of contents
+1. Core keywords and types (properties, type, items, required, enum, const)
+2. Structural keywords (properties, patternProperties, additionalProperties, dependencies)
+3. Combining keywords (allOf, anyOf, oneOf, not)
+4. Array keywords (items, additionalItems, contains, minItems, maxItems, uniqueItems)
+5. Validation semantics relevant to diffing
 
-Meta-schema shape and top-level types:
-The Draft-07 meta-schema is itself a JSON Schema and accepts either an object or a boolean at any schema location. The metaschema defines primitive type names and several reusable definitions. Key implementation facts:
-- Schema nodes may be boolean (true = always valid, false = always invalid); code must accept boolean schema nodes when traversing or inlining refs.
-- Allowed simple types: array, boolean, integer, null, number, object, string. Treat integer as a numeric subtype for value classification.
-- The type keyword accepts either a single string or an array of strings; normalize to an array for comparison.
+Core keywords (concise semantics)
+- type: string or array of strings. Allowed simple types: array, boolean, integer, null, number, object, string. When type is an array, an instance is valid if its runtime type matches any listed type.
+- properties: an object mapping property names to subschemas. Evaluation: for an object instance, apply the named subschema to the named property value when present.
+- required: an array of property names; instance is invalid if any listed property is absent.
+- enum: array of values. Instance must equal one of the enum entries.
+- const: single value; instance must be strictly equal to it.
 
-Core validation keywords (implementation details):
-- type: string | array<string>. For validation, test instance runtime type against any member.
-- enum: array with minItems 1 and uniqueItems true; validation is strict equality against any member.
-- const: exact match to a single value.
-- numeric: multipleOf (number, exclusiveMinimum 0), maximum, minimum, exclusiveMaximum, exclusiveMinimum.
-- string: maxLength/minLength (nonNegative integers), pattern (ECMA-262 regex). Implementations should validate pattern using ECMAScript compatible regex engine.
-- arrays: items (schema or schema array), additionalItems (schema), contains (schema), uniqueItems (boolean), maxItems/minItems.
-  - If items is a single schema, apply it to every array element.
-  - If items is an array (tuple typing), apply by index; additionalItems governs elements with index >= items.length.
-- objects: properties (map<string, schema>), required (array<string>), additionalProperties (schema|boolean), patternProperties (map<regex, schema>), dependencies (map<string, schema | string[]]), propertyNames (schema). Default values: properties/patternProperties/definitions default to {}.
+Structural keywords
+- additionalProperties: boolean or schema. If boolean false and an instance object contains properties not listed in properties/patternProperties, validation fails.
+- patternProperties: object where keys are regex patterns; each matching property must validate against the associated schema.
+- dependencies: property dependencies can be either a list of required properties or a schema that must validate when the key exists.
 
-Combining keywords and conditionals:
-- allOf: array of schemas; merge logic for diffing: compare each subschema or match by structural equality when possible.
-- anyOf/oneOf: alternative validation sets; for diffing attempt best-effort matching of corresponding subschemas; unmatched alternates are added/removed.
-- not: negation of subschema validation; diffs involving not are best handled as nested-changed entries.
-- if/then/else: conditional validation. For diffing, treat if/then/else as three subschemas and diff them by position.
+Combining keywords
+- allOf: an array of schemas. Instance must validate against every subschema.
+- anyOf: an array of schemas. Instance must validate against at least one subschema.
+- oneOf: an array of schemas. Instance must validate against exactly one subschema.
+- not: a single schema. Instance must NOT validate against the subschema.
 
-Reference and resolution (high-level):
-- $ref is declared as a string with format uri-reference. When $ref begins with '#', the fragment is a JSON Pointer (RFC 6901) and must be resolved locally. Resolution replaces the $ref node with the referenced schema node for validation and for diffing purposes. For mission scope: remote $ref values (not starting with '#') are unsupported and must cause the resolver to throw an error.
+Array handling
+- items: may be a schema (applies to all elements) or an array of schemas (positional validation). If items is an array and additionalItems is false, instance arrays longer than items.length are invalid.
+
+Validation semantics relevant to diffing
+- required presence: if a property moves from optional to required (i.e., added to required array), that is a breaking change for clients that do not send the property.
+- property removal: removing a property from properties is breaking only if clients relied on it being present or it was required; generally property removal is breaking.
+- type narrowing: when the set of allowed instance types shrinks such that the intersection of old and new allowed types is empty for some instance shapes, treat as breaking.
+- enum changes: removing an allowed enum value is breaking; adding a value is compatible.
 
 SUPPLEMENTARY DETAILS
+- Normalization helpers for code:
+  - normalizeType(schema) -> Array<string>
+  - getPropertySchema(schema, path) -> subschema or null
+  - isRequired(schema, propertyName) -> boolean
+- When resolving $ref before diffing, treat all $ref replacements as deep copies so comparisons operate on concrete schemas.
 
-Boolean schemas:
-- true acts as permissive schema; false rejects all instances. When inlining or canonicalizing, preserve boolean schemas.
-
-Type handling:
-- Canonicalize type to array form: if type is a string, convert to [type]. This simplifies equality checks and diff logic.
-- Consider integer as subset of number; the default diff classifier treats any change to the type set as a breaking change.
-
-Items (tuple vs homogeneous arrays):
-- When items is an array: apply per-index schema. additionalItems governs further items; default is an empty schema (allow any) when not present.
-
-REFERENCE DETAILS (exact keywords and shapes)
-
-Meta-schema-derived definitions used by implementations:
-- simpleTypes enum: [array, boolean, integer, null, number, object, string]
-- stringArray: type: array, items: { type: string }, uniqueItems: true, default: []
-- nonNegativeInteger/Default0 definitions for max/min lengths and counts.
-
-Canonical shapes the implementation should expect and normalize to:
-- properties: object with additionalProperties = schema
-- required: array<string> (default [])
-- items: schema | schema[] (schemaArray requires minItems 1 when array form used)
-- enum: array (minItems 1, uniqueItems true)
+REFERENCE DETAILS (API used by the diff engine)
+- extractProperties(schema) -> Map<string, subschema>
+  - Returns the explicit properties object from a schema, or empty map if none.
+- compareRequiredArrays(beforeRequired, afterRequired) -> {added:[], removed:[]}
+- compareTypes(beforeType, afterType) -> {compatibility: 'breaking'|'compatible'|'informational', reason: string}
 
 DETAILED DIGEST
-Source: https://json-schema.org/draft-07/schema
-Retrieved: 2026-03-27
-Bytes obtained: 4979
-Extracted: meta-schema JSON fragment including definitions schemaArray, nonNegativeInteger, nonNegativeIntegerDefault0, simpleTypes and stringArray plus detailed property declarations for top-level keywords. Use the meta-schema definitions to normalize schema documents before performing comparisons (inline local refs, normalize types, ensure required is array, ensure properties is an object).
+- Source: JSON Schema Draft-07 meta-schema and draft-07 validation pages (retrieved 2026-03-27)
+- Retrieved date: 2026-03-27
+- Data obtained during crawl: draft-07 meta-schema (JSON), draft-07 validation (approx 90.9 KB)
 
 ATTRIBUTION
-Original source: json-schema.org (Draft-07 meta-schema). Data harvested during crawl: 4979 bytes.
+- JSON Schema Draft-07 meta-schema: https://json-schema.org/draft-07/schema
+- Draft-07 Validation: https://json-schema.org/draft-07/json-schema-validation.html
+- Data sizes (crawl): meta-schema (inline JSON), validation page (~90.9 KB)

@@ -1,43 +1,58 @@
+JSON_POINTER
+
 NORMALISED EXTRACT
 
-Table of contents:
-- Pointer syntax and forms
-- Percent-decoding rules for URI fragments
-- Token unescape rules (~0, ~1)
-- Resolution algorithm (step-by-step)
-- Error cases and edge behavior
+Table of contents
+1. Pointer syntax
+2. Decode rules and escape sequences
+3. Resolution algorithm (step-by-step)
+4. Edge cases and error conditions
 
-Pointer syntax and forms
-A JSON Pointer is either the empty string (references the whole document) or a sequence of reference tokens separated by '/' where the pointer begins with '/'. When used as a URI fragment (after '#') the fragment must be percent-decoded before applying the JSON Pointer unescape rules.
+Pointer syntax
+- A JSON Pointer is either the empty string "" (which references the whole document) or a sequence of zero or more reference tokens each prefixed by a "/" character.
+- Example pointers: "" (root), "/foo", "/foo/0", "/a~1b".
 
-Percent-decoding and token unescape
-- If the pointer appears in a URI fragment (starts with '#'), remove the leading '#' and percent-decode the remaining characters using UTF-8 percent-decoding rules.
-- For each reference token, unescape in this order: replace the sequence '~1' with '/', then replace '~0' with '~'. No other '~' escapes are defined.
+Decode rules and escape sequences (RFC 6901)
+- Reference tokens are encoded such that the two-character sequences ~0 and ~1 represent the characters ~ and / respectively.
+- Decoding procedure for each token: replace the substring "~1" with "/", then replace "~0" with "~".
+- Tokens are taken literally otherwise; array indices are decimal base-10 strings (e.g. "0", "42").
 
-Resolution algorithm (implementation-ready):
-1. If pointer starts with '#', pointerText = percentDecode(pointer.substring(1)); else pointerText = pointer.
-2. If pointerText is an empty string, resolution result is the root document node.
-3. Split pointerText on '/' into an array of tokens. If pointerText started with '/', the first token after split is empty; ignore that leading empty token.
-4. For each token in order, perform the tilde-unescape step (~1 -> /, ~0 -> ~).
-5. Let current = root. For each token t:
-   - If current is an object: if t is a key in current, set current = current[t], else fail with RefNotFound.
-   - If current is an array: if t is a base-10 non-negative integer string and index in range, set current = current[Number(t)], else fail with RefNotFound.
-6. Return current.
+Resolution algorithm (implementation steps)
+1. If pointer == "" return the root document.
+2. Otherwise split pointer on "/"; ignore the leading empty segment.
+3. For each reference token in order:
+   a. Decode the token (apply ~1->/ then ~0->~).
+   b. If the current value is an object, use the decoded token as a property name; if the property does not exist, throw PointerNotFound.
+   c. If the current value is an array, interpret the decoded token as a non-negative integer index; if not a valid index or out of bounds, throw PointerNotFound.
+   d. Set current value to the selected child and continue.
+4. Return the final current value.
 
-Error cases and notes
-- Tokens may be empty strings to reference properties with empty names.
-- JSON Pointer does not define '-' token semantics; '-' is used by JSON Patch but not JSON Pointer.
-- Implementations must error on invalid percent-encodings encountered when decoding a fragment.
+Edge cases and error conditions
+- A token that decodes to the empty string ("") is a valid property name and should be looked up as such.
+- The pointer "/" refers to the property named "" on the root object.
+- Implementations must not percent-decode the fragment — JSON Pointer uses ~ escapes only.
 
-REFERENCE DETAILS
-- Exact unescape operation: token = token.replace('~1', '/').replace('~0', '~') (perform replacements in this order).
-- Percent-decode only when pointer is derived from a URI fragment; raw pointer strings should not be percent-decoded.
+SUPPLEMENTARY DETAILS
+- Performance: token split + iterative lookup is O(depth). When used repeatedly, caching path-to-node mappings speeds repeated resolutions.
+- Robustness: callers should detect and handle PointerNotFound and treat it as a schema resolution error during $ref expansion.
+- When resolving against schemas, always resolve pointers against the canonical root document (after applying any base URI logic if applicable).
+
+REFERENCE DETAILS (API)
+- resolvePointer(document, pointer) -> value
+  - Parameters: document (Object|Array), pointer (string following RFC6901 grammar).
+  - Returns: the value at the pointer if present.
+  - Throws: PointerNotFoundError when the pointer cannot be resolved; PointerSyntaxError for invalid pointer syntax.
+- decodeReferenceToken(token) -> string
+  - Parameters: token (string as it appears between slashes).
+  - Returns: decoded token: apply replacements in order: ~1 -> /, then ~0 -> ~.
 
 DETAILED DIGEST
-Source: RFC 6901 (JSON Pointer)
-Retrieved: 2026-03-27
-Bytes obtained: 4772
-Extracted: formal pointer grammar, the tilde escape rules, percent-decoding guidance, and object/array traversal semantics required to implement reliable local $ref resolution.
+- Source: RFC 6901 "JSON Pointer" (retrieved 2026-03-27)
+- Retrieved date: 2026-03-27
+- Data obtained during crawl: HTML page rendering of RFC 6901 (approx 71.6 KB)
+- Extract: exact pointer grammar, escape sequences (~0/~1), evaluation semantics and examples used above.
 
 ATTRIBUTION
-RFC 6901 (IETF). Data harvested during crawl: 4772 bytes.
+- Source: RFC 6901 - JavaScript Object Notation (JSON) Pointer
+- URL: https://datatracker.ietf.org/doc/html/rfc6901
+- Data size (crawl result): ~71.6 KB
