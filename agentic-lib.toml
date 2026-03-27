@@ -6,8 +6,7 @@
 # During init:
 
 [schedule]
-supervisor = "off"       # off | weekly | daily | hourly | continuous
-model = "gpt-5-mini"
+supervisor = "hourly"       # off | weekly | daily | hourly | continuous
 focus = "mission"                 # mission | maintenance
 
 [paths]
@@ -94,7 +93,7 @@ review-issues-cap = 2                  # max issues reviewed per batch (conserva
 min-resolved-issues = 1                # mission-complete: minimum closed-as-RESOLVED issues
 min-cumulative-transforms = 1          # mission-complete: minimum transform cycles
 max-source-todos = 1                   # mission-complete: max TODO comments in src
-acceptance-criteria-threshold = 35     # mission-complete: % acceptance criteria required
+acceptance-criteria-threshold = 50     # mission-complete: % acceptance criteria required
 
 [profiles.med]
 reasoning-effort = "high"            # low | medium | high | none
@@ -171,19 +170,21 @@ screenshot-file = "SCREENSHOT_INDEX.png"
 
 [acceptance-criteria]
 # Auto-generated from MISSION.md on init. Updated by implementation-review.
-total = 8
-1 = { text = "Parsing `\"y=Math.sin(x)\"` returns a callable function", met = false }
-2 = { text = "Evaluating over range `-3.14:0.01:3.14` returns ~628 data points", met = false }
-3 = { text = "SVG output contains `<polyline>` and `viewBox` attributes", met = false }
-4 = { text = "PNG output starts with the PNG magic bytes", met = false }
-5 = { text = "CLI `--expression \"y=Math.sin(x)\" --range \"-3.14:0.01:3.14\" --file output.svg` produces a file", met = false }
-6 = { text = "CLI `--help` prints usage information", met = false }
-7 = { text = "All unit tests pass", met = false }
-8 = { text = "README documents CLI usage with examples", met = false }
+total = 10
+1 = { text = "Diffing two schemas returns an array of change objects", met = false }
+2 = { text = "Detects added and removed properties", met = false }
+3 = { text = "Detects type changes (e.g. `\"string\"` → `\"number\"`)", met = false }
+4 = { text = "Detects `required` array changes", met = false }
+5 = { text = "Handles nested schemas recursively (properties within properties)", met = false }
+6 = { text = "Resolves local `$ref` before diffing", met = false }
+7 = { text = "Classifying a removed required property returns `\"breaking\"`", met = false }
+8 = { text = "Formatting changes produces readable text output", met = false }
+9 = { text = "All unit tests pass", met = false }
+10 = { text = "README documents usage with examples", met = false }
 
 [init]
-timestamp = "2026-03-25T03:03:40.203Z"
+timestamp = "2026-03-27T02:10:45.010Z"
 mode = "purge"
-mission = "2-kyu-create-plot-code-lib"
+mission = "4-kyu-analyze-json-schema-diff"
 mission-type = "random"
 version = "7.4.59"
